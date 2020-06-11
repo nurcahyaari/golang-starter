@@ -5,7 +5,23 @@ import (
 	"golang-starter/src/products/repositories"
 )
 
-func GetProducts() []models.Products {
+type ProductService interface {
+	GetProducts() []models.Products
+}
+
+type productService struct {
+	ProductRepository repositories.ProductRepository
+}
+
+func ProvideProductService(
+	productRepository repositories.ProductRepository,
+) ProductService {
+	return &productService{
+		ProductRepository: productRepository,
+	}
+}
+
+func (repo *productService) GetProducts() []models.Products {
 	// var products []models.Products
-	return repositories.FindAll()
+	return repo.ProductRepository.FindAll()
 }

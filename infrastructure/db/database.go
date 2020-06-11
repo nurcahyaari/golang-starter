@@ -9,15 +9,20 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
-// type Database struct {
-// 	db *gorm.DB
-// }
+type Database interface {
+	Query() *gorm.DB
+}
 
-var db *gorm.DB
+type database struct {
+	db *gorm.DB
+}
 
-func Load() {
+// var db *gorm.DB
+
+func Load() Database {
 	log.Println("Initialize Database connection")
 	var err error
+	var db *gorm.DB
 	dbDialeg := os.Getenv("DB_DIALEG")
 	dbHost := os.Getenv("DB_HOST")
 	dbPort := os.Getenv("DB_PORT")
@@ -35,11 +40,13 @@ func Load() {
 		log.Fatal("Error to loading Database %s", err)
 	}
 	log.Println("Database was connected")
-
+	return &database{
+		db: db,
+	}
 }
 
-func Query() *gorm.DB {
-	return db
+func (database *database) Query() *gorm.DB {
+	return database.db
 }
 
 // func Query() *gorm.DB {

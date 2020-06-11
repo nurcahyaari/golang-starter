@@ -1,7 +1,6 @@
 package config
 
 import (
-	"golang-starter/infrastructure/db"
 	"log"
 
 	"github.com/pkg/errors"
@@ -18,8 +17,5 @@ func AppConfig() error {
 		log.Fatalln("Cannot Load .env file")
 		return errors.New("Cannot Load .env file")
 	}
-
-	// load database
-	db.Load()
 	return nil
 }
