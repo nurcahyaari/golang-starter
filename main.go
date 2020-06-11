@@ -6,6 +6,6 @@ import (
 )
 
 func main() {
-	log.Print("Server is starting\n\n")
+	log.Println("Server is starting")
 	app.MainApplication()
 }

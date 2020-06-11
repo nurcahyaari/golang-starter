@@ -1,15 +1,17 @@
 package controllers
 
 import (
-	"golang-starter/infrastructure/db"
-	"golang-starter/src/recipes/models"
+	"golang-starter/src/products/models"
+	"golang-starter/src/products/services"
 
 	"github.com/gofiber/fiber"
 )
 
 func GetProducts(ctx *fiber.Ctx) {
 	var products []models.Products
-	db.Query().Find(&products)
+
+	// get all products
+	products = services.GetProducts()
 
 	ctx.JSON(products)
 }

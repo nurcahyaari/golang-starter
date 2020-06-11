@@ -1,7 +1,7 @@
 package router
 
 import (
-	"golang-starter/src/recipes/controllers"
+	"golang-starter/src/products/controllers"
 
 	"github.com/gofiber/fiber"
 )
