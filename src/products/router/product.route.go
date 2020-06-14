@@ -1,7 +1,7 @@
 package router
 
 import (
-	"golang-starter/infrastructure/db"
+	"golang-starter/infrastructure/db/onlinedb"
 	"golang-starter/src/products/controllers"
 	"golang-starter/src/products/repositories"
 	"golang-starter/src/products/services"
@@ -10,7 +10,7 @@ import (
 )
 
 func RecipesRoute(app *fiber.App) {
-	db := db.Load()
+	db := onlinedb.Load()
 	productRepository := repositories.ProvideProductRepostiory(db)
 	productService := services.ProvideProductService(productRepository)
 	productController := controllers.ProvideProductController(productService)

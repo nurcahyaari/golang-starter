@@ -2,6 +2,7 @@ package routes
 
 import (
 	productRouter "golang-starter/src/products/router"
+	userRouter "golang-starter/src/users/router"
 
 	"github.com/gofiber/fiber"
 )
@@ -17,6 +18,7 @@ func RegisterRoute(app *fiber.App) {
 
 	// registering route from another modules
 	productRouter.RecipesRoute(app)
+	userRouter.UserRoute(app)
 
 	// handling 404 error
 	app.Use(func(c *fiber.Ctx) {

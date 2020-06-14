@@ -1,0 +1,20 @@
+package router
+
+import (
+	"golang-starter/infrastructure/db/onlinedb"
+	"golang-starter/src/users/controllers"
+	"golang-starter/src/users/repositories"
+	"golang-starter/src/users/services"
+
+	"github.com/gofiber/fiber"
+)
+
+func UserRoute(app *fiber.App) {
+	db := onlinedb.Load()
+
+	userRepo := repositories.ProvideUserRepository(db)
+	userService := services.ProvideUserService(userRepo)
+	userController := controllers.ProvideUserController(userService)
+
+	app.Post("/user/login", userController.Login)
+}

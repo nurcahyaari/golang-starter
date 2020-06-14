@@ -1,9 +1,9 @@
-package db
+package onlinedb
 
 import (
 	"fmt"
+	"golang-starter/infrastructure/config"
 	"log"
-	"os"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -20,15 +20,15 @@ type database struct {
 // var db *gorm.DB
 
 func Load() Database {
-	log.Println("Initialize Database connection")
+	// log.Println("Initialize Database connection")
 	var err error
 	var db *gorm.DB
-	dbDialeg := os.Getenv("DB_DIALEG")
-	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
-	dbName := os.Getenv("DB_NAME")
-	dbUser := os.Getenv("DB_USERNAME")
-	dbPassword := os.Getenv("DB_PASSWORD")
+	dbDialeg := config.Get().DbDialeg
+	dbHost := config.Get().DbHost
+	dbPort := config.Get().DbPort
+	dbName := config.Get().DbName
+	dbUser := config.Get().DbUsername
+	dbPassword := config.Get().DbPassword
 
 	sHost := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPassword, dbHost, dbPort, dbName)
 	sDialeg := fmt.Sprintf("%s", dbDialeg)
@@ -38,8 +38,9 @@ func Load() Database {
 
 	if err != nil {
 		log.Fatal("Error to loading Database %s", err)
+		panic(err)
 	}
-	log.Println("Database was connected")
+	// log.Println("Database was connected")
 	return &database{
 		db: db,
 	}

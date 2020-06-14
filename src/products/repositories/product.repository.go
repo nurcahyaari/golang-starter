@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"golang-starter/infrastructure/db"
+	"golang-starter/infrastructure/db/onlinedb"
 	"golang-starter/src/products/models"
 )
 
@@ -13,10 +13,10 @@ type ProductRepository interface {
 }
 
 type productRepository struct {
-	DB db.Database
+	DB onlinedb.Database
 }
 
-func ProvideProductRepostiory(DB db.Database) ProductRepository {
+func ProvideProductRepostiory(DB onlinedb.Database) ProductRepository {
 	return &productRepository{
 		DB: DB,
 	}
