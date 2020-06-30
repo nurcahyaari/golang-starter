@@ -2,6 +2,7 @@ package router
 
 import (
 	"golang-starter/infrastructure/db/onlinedb"
+	"golang-starter/infrastructure/middleware"
 	"golang-starter/src/users/controllers"
 	"golang-starter/src/users/repositories"
 	"golang-starter/src/users/services"
@@ -17,4 +18,5 @@ func UserRoute(app *fiber.App) {
 	userController := controllers.ProvideUserController(userService)
 
 	app.Post("/user/login", userController.Login)
+	app.Post("/user/refresh-token", middleware.JwtVerifyRefresh, userController.Refresh)
 }

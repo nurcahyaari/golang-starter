@@ -14,6 +14,7 @@ import (
 type UserService interface {
 	FindByID(id uint) models.Users
 	Login(userDTO *dto.User) response.ResponseDTO
+	RefreshToken(userID string) response.ResponseDTO
 }
 
 type userService struct {
@@ -44,6 +45,16 @@ func (repo *userService) Login(userDTO *dto.User) response.ResponseDTO {
 
 	userToken := auth.Sign(jwt.MapClaims{
 		"id": user.UserID,
+	})
+
+	return response.ResponseDTO{
+		Data: userToken,
+	}
+}
+
+func (repo *userService) RefreshToken(userID string) response.ResponseDTO {
+	userToken := auth.Sign(jwt.MapClaims{
+		"id": userID,
 	})
 
 	return response.ResponseDTO{

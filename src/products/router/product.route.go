@@ -2,6 +2,7 @@ package router
 
 import (
 	"golang-starter/infrastructure/db/onlinedb"
+	"golang-starter/infrastructure/middleware"
 	"golang-starter/src/products/controllers"
 	"golang-starter/src/products/repositories"
 	"golang-starter/src/products/services"
@@ -15,5 +16,5 @@ func RecipesRoute(app *fiber.App) {
 	productService := services.ProvideProductService(productRepository)
 	productController := controllers.ProvideProductController(productService)
 
-	app.Get("/products", productController.GetProducts)
+	app.Get("/products", middleware.JwtVerifyToken, productController.GetProducts)
 }

@@ -36,6 +36,10 @@ func Sign(claims jwt.MapClaims) TokenDTO {
 	timeNow := time.Now()
 	tokenExpired := timeNow.Add(time.Second * config.Get().JwtTokenExpired).Unix()
 
+	if claims["id"] == nil {
+		return TokenDTO{}
+	}
+
 	token := jwt.New(jwt.SigningMethodRS256)
 	// setup userdata
 	var _, checkExp = claims["exp"]
@@ -49,6 +53,7 @@ func Sign(claims jwt.MapClaims) TokenDTO {
 	if checkIat == false {
 		claims["iat"] = timeNow.Unix()
 	}
+	claims["token_type"] = "access_token"
 
 	token.Claims = claims
 
@@ -60,14 +65,14 @@ func Sign(claims jwt.MapClaims) TokenDTO {
 	}
 
 	authToken.Token = tokenString
-	authToken.Type = "Bearer"
+	authToken.Type = config.Get().JwtTokenType
 
 	//create refresh token
 	refreshToken := jwt.New(jwt.SigningMethodRS256)
 	refreshTokenExpired := timeNow.Add(time.Second * config.Get().JwtRefreshExpired).Unix()
 
 	claims["exp"] = refreshTokenExpired
-
+	claims["token_type"] = "refresh_token"
 	refreshToken.Claims = claims
 
 	refreshTokenString, err := refreshToken.SignedString(config.Get().PrivateKey)
@@ -81,7 +86,7 @@ func Sign(claims jwt.MapClaims) TokenDTO {
 	go func() {
 		encryptionRefreshToken := encryption.AesCFBEncryption(refreshTokenString, config.Get().AppKey)
 		localDB := localdb.Load()
-		localDB.Query().Write("refresh_token", string(timeNow.Unix()), RefreshDTO{RefreshToken: encryptionRefreshToken, Expired: refreshTokenExpired})
+		localDB.Query().Write("refresh_token", claims["id"].(string), RefreshDTO{RefreshToken: encryptionRefreshToken, Expired: refreshTokenExpired})
 	}()
 
 	return TokenDTO{

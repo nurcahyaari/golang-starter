@@ -30,7 +30,9 @@ type appConfigStruct struct {
 	DbPassword string
 	// key
 	PrivateKey *rsa.PrivateKey
-	// jwt time expired
+	PublicKey  *rsa.PublicKey
+	// jwt
+	JwtTokenType      string
 	JwtTokenExpired   time.Duration // in second
 	JwtRefreshExpired time.Duration // in second
 }
@@ -108,6 +110,7 @@ func readPrivateKey() *rsa.PrivateKey {
 
 func load() appConfigStruct {
 	privateKey := readPrivateKey()
+	publicKey := readPublicKey()
 
 	return appConfigStruct{
 		AppPort: os.Getenv("APP_PORT"),
@@ -120,8 +123,11 @@ func load() appConfigStruct {
 		DbUsername: os.Getenv("DB_USERNAME"),
 		DbPassword: os.Getenv("DB_PASSWORD"),
 		PrivateKey: privateKey,
+		PublicKey:  publicKey,
 		// Jwt Configuration
-		JwtTokenExpired: 60, // in second
+		JwtTokenType:      "Bearer",
+		JwtTokenExpired:   60 * 60,           // in second
+		JwtRefreshExpired: 60 * 60 * 24 * 30, // in second
 	}
 }
 

@@ -10,6 +10,7 @@ import (
 
 type UserController interface {
 	Login(ctx *fiber.Ctx)
+	Refresh(ctx *fiber.Ctx)
 }
 
 type userController struct {
@@ -32,6 +33,14 @@ func (service *userController) Login(ctx *fiber.Ctx) {
 	}
 
 	res := service.UserService.Login(userDTO)
+
+	ctx.JSON(res)
+}
+
+func (service *userController) Refresh(ctx *fiber.Ctx) {
+	userID := ctx.Get("userID")
+
+	res := service.UserService.RefreshToken(userID)
 
 	ctx.JSON(res)
 }
