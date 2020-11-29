@@ -7,7 +7,7 @@ import (
 	"golang-starter/src/users/repositories"
 	"golang-starter/src/users/services"
 
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 )
 
 func UserRoute(app *fiber.App) {

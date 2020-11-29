@@ -4,6 +4,7 @@ import (
 	"golang-starter/infrastructure/config"
 	"golang-starter/infrastructure/db/localdb"
 	"golang-starter/infrastructure/utils/encryption"
+	"log"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -19,14 +20,6 @@ type RefreshDTO struct {
 	RefreshToken string `json:"refresh_token"`
 	Expired      int64  `json:"expired"`
 }
-
-// type Token interface {
-// 	Sign() *TokenDTO
-// 	RefreshToken() *TokenDTO
-// 	ValidateToken()
-// 	saveToLocalDB()
-// 	getFromLocalDB() string
-// }
 
 // Sign ins method to generate jwt token and refresh token
 // it has ... parameter
@@ -60,7 +53,7 @@ func Sign(claims jwt.MapClaims) TokenDTO {
 	authToken := new(TokenDTO)
 	tokenString, err := token.SignedString(config.Get().PrivateKey)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 		return TokenDTO{}
 	}
 
@@ -95,19 +88,3 @@ func Sign(claims jwt.MapClaims) TokenDTO {
 		RefreshToken: authToken.RefreshToken,
 	}
 }
-
-// func (t *token) RefreshToken() token {
-
-// }
-
-// func (t *token) ValidateToken() {
-
-// }
-
-// func (t *token) saveToLocalDB() {
-
-// }
-
-// func (t *token) getFromLocalDB() string {
-
-// }

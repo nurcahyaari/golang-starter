@@ -49,7 +49,3 @@ func Load() Database {
 func (database *database) Query() *gorm.DB {
 	return database.db
 }
-
-// func Query() *gorm.DB {
-// 	return db
-// }

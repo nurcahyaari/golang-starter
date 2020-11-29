@@ -13,7 +13,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/dgrijalva/jwt-go/request"
 
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 )
 
 /*
@@ -24,12 +24,7 @@ import (
 **
  */
 
-func JwtMiddleware(ctx *fiber.Ctx) {
-	fmt.Println("Middleware")
-	ctx.Next()
-}
-
-func JwtVerifyToken(ctx *fiber.Ctx) {
+func JwtVerifyToken(ctx *fiber.Ctx) error {
 	JwtToken := strings.Replace(ctx.Get("Authorization"), fmt.Sprintf("%s ", config.Get().JwtTokenType), "", 1)
 
 	if JwtToken == "" {
@@ -37,9 +32,7 @@ func JwtVerifyToken(ctx *fiber.Ctx) {
 			Code:    401,
 			Message: "Unauthorized",
 		}
-		ctx.Status(401)
-		ctx.JSON(res)
-		return
+		return ctx.Status(401).JSON(res)
 	}
 
 	req := new(http.Request)
@@ -64,15 +57,13 @@ func JwtVerifyToken(ctx *fiber.Ctx) {
 			Code:    401,
 			Message: err.Error(),
 		}
-		ctx.Status(401)
-		ctx.JSON(res)
-		return
+		return ctx.Status(401).JSON(res)
 	}
 
-	ctx.Next()
+	return ctx.Next()
 }
 
-func JwtVerifyRefresh(ctx *fiber.Ctx) {
+func JwtVerifyRefresh(ctx *fiber.Ctx) error {
 	JwtToken := strings.Replace(ctx.Get("Authorization"), fmt.Sprintf("%s ", config.Get().JwtTokenType), "", 1)
 
 	if JwtToken == "" {
@@ -80,9 +71,7 @@ func JwtVerifyRefresh(ctx *fiber.Ctx) {
 			Code:    401,
 			Message: "Unauthorized",
 		}
-		ctx.Status(401)
-		ctx.JSON(res)
-		return
+		return ctx.Status(401).JSON(res)
 	}
 	req := new(http.Request)
 	req.Header = http.Header{}
@@ -105,9 +94,7 @@ func JwtVerifyRefresh(ctx *fiber.Ctx) {
 			Code:    401,
 			Message: err.Error(),
 		}
-		ctx.Status(401)
-		ctx.JSON(res)
-		return
+		return ctx.Status(401).JSON(res)
 	}
 
 	// check is refresh_token available in localDB?
@@ -118,9 +105,7 @@ func JwtVerifyRefresh(ctx *fiber.Ctx) {
 			Code:    401,
 			Message: "Token not found",
 		}
-		ctx.Status(401)
-		ctx.JSON(res)
-		return
+		return ctx.Status(401).JSON(res)
 	}
 	localDB := localdb.Load()
 	refreshToken := new(auth.RefreshDTO)
@@ -131,11 +116,9 @@ func JwtVerifyRefresh(ctx *fiber.Ctx) {
 			Code:    401,
 			Message: "Refresh Token was expired",
 		}
-		ctx.Status(401)
-		ctx.JSON(res)
-		return
+		return ctx.Status(401).JSON(res)
 	}
 
-	ctx.Fasthttp.Request.Header.Set("userID", userID)
-	ctx.Next()
+	ctx.Context().Request.Header.Set("userID", userID)
+	return ctx.Next()
 }

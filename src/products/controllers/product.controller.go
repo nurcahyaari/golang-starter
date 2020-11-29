@@ -4,11 +4,11 @@ import (
 	"golang-starter/src/products/models"
 	"golang-starter/src/products/services"
 
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 )
 
 type ProductController interface {
-	GetProducts(ctx *fiber.Ctx)
+	GetProducts(ctx *fiber.Ctx) error
 }
 
 type productController struct {
@@ -23,10 +23,10 @@ func ProvideProductController(
 	}
 }
 
-func (services *productController) GetProducts(ctx *fiber.Ctx) {
+func (services *productController) GetProducts(ctx *fiber.Ctx) error {
 	var products []models.Products
 	// get all products
 	products = services.ProductService.GetProducts()
 
-	ctx.JSON(products)
+	return ctx.JSON(products)
 }

@@ -7,7 +7,7 @@ import (
 	"golang-starter/src/products/repositories"
 	"golang-starter/src/products/services"
 
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 )
 
 func RecipesRoute(app *fiber.App) {
