@@ -4,7 +4,7 @@ Golang base project using fiber framework
 ### Folder Structure
 
 here how golang-started manage directory:
-
+```
 |-- infrastructure
 |   |-- app
 |   |-- config
@@ -19,7 +19,7 @@ here how golang-started manage directory:
 |       |-- encryption
 |       `-- response
 |-- src
-
+```
 
 all global setting will place in infrastructure folder
 all module will place in src
