@@ -11,7 +11,6 @@ here how golang-started manage directory:
 |   |-- db
 |   |   |-- localdb
 |   |   `-- onlinedb
-|   |       `-- online_database.go
 |   |-- middleware
 |   |-- routes
 |   `-- utils
