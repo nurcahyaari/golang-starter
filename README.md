@@ -10,13 +10,13 @@ here how golang-started manage directory:
 |   |-- config
 |   |-- db
 |   |   |-- localdb
-|   |   `-- onlinedb
+|   |   |-- onlinedb
 |   |-- middleware
 |   |-- routes
-|   `-- utils
+|   |-- utils
 |       |-- auth
 |       |-- encryption
-|       `-- response
+|       |-- response
 |-- src
 ```
 
