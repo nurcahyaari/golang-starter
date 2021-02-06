@@ -20,5 +20,5 @@ here how golang-started manage directory:
 |-- src
 ```
 
-all global setting will place in infrastructure folder
+all global setting will place in internal folder
 all module will place in src
