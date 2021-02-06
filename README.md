@@ -5,7 +5,7 @@ Golang base project using fiber framework
 
 here how golang-started manage directory:
 ```
-|-- infrastructure
+|-- internal
 |   |-- app
 |   |-- config
 |   |-- db
