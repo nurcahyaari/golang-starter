@@ -1,25 +1,23 @@
-package onlinedb
+package db
 
 import (
 	"fmt"
-	"golang-starter/infrastructure/config"
+	"golang-starter/internal/config"
 	"log"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
-type Database interface {
+type MysqlDB interface {
 	Query() *gorm.DB
 }
 
-type database struct {
+type mysqlDB struct {
 	db *gorm.DB
 }
 
-// var db *gorm.DB
-
-func Load() Database {
+func NewMysqlClient() MysqlDB {
 	// log.Println("Initialize Database connection")
 	var err error
 	var db *gorm.DB
@@ -38,14 +36,14 @@ func Load() Database {
 
 	if err != nil {
 		log.Fatal("Error to loading Database %s", err)
-		panic(err)
+		return nil
 	}
 	// log.Println("Database was connected")
-	return &database{
+	return &mysqlDB{
 		db: db,
 	}
 }
 
-func (database *database) Query() *gorm.DB {
-	return database.db
+func (mysql mysqlDB) Query() *gorm.DB {
+	return mysql.db
 }

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"golang-starter/infrastructure/app"
+	"golang-starter/internal/app"
 	"log"
 )
 

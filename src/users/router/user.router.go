@@ -1,8 +1,8 @@
 package router
 
 import (
-	"golang-starter/infrastructure/db/onlinedb"
-	"golang-starter/infrastructure/middleware"
+	"golang-starter/internal/db"
+	"golang-starter/internal/middleware"
 	"golang-starter/src/users/controllers"
 	"golang-starter/src/users/repositories"
 	"golang-starter/src/users/services"
@@ -11,7 +11,7 @@ import (
 )
 
 func UserRoute(app *fiber.App) {
-	db := onlinedb.Load()
+	db := db.NewMysqlClient()
 
 	userRepo := repositories.ProvideUserRepository(db)
 	userService := services.ProvideUserService(userRepo)

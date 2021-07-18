@@ -2,8 +2,8 @@ package app
 
 import (
 	"fmt"
-	"golang-starter/infrastructure/config"
-	"golang-starter/infrastructure/routes"
+	"golang-starter/internal/config"
+	"golang-starter/internal/routes"
 	"log"
 
 	"github.com/gofiber/fiber/v2"

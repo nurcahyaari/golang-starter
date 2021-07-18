@@ -1,4 +1,4 @@
-package localdb
+package db
 
 import (
 	"log"
@@ -6,25 +6,25 @@ import (
 	scribble "github.com/nanobox-io/golang-scribble"
 )
 
-type LocalDB interface {
+type ScribleDB interface {
 	Query() *scribble.Driver
 }
 
-type localDB struct {
+type scribleDB struct {
 	db *scribble.Driver
 }
 
-func Load() LocalDB {
+func NewScribleClient() ScribleDB {
 	db, err := scribble.New("temp/db", nil)
 	if err != nil {
 		log.Println("Error", err)
 	}
 
-	return &localDB{
+	return &scribleDB{
 		db: db,
 	}
 }
 
-func (db *localDB) Query() *scribble.Driver {
+func (db *scribleDB) Query() *scribble.Driver {
 	return db.db
 }

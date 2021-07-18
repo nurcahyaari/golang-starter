@@ -1,9 +1,9 @@
 package auth
 
 import (
-	"golang-starter/infrastructure/config"
-	"golang-starter/infrastructure/db/localdb"
-	"golang-starter/infrastructure/utils/encryption"
+	"golang-starter/internal/config"
+	"golang-starter/internal/db"
+	"golang-starter/internal/utils/encryption"
 	"log"
 	"time"
 
@@ -78,8 +78,8 @@ func Sign(claims jwt.MapClaims) TokenDTO {
 	//save token to local db
 	go func() {
 		encryptionRefreshToken := encryption.AesCFBEncryption(refreshTokenString, config.Get().AppKey)
-		localDB := localdb.Load()
-		localDB.Query().Write("refresh_token", claims["id"].(string), RefreshDTO{RefreshToken: encryptionRefreshToken, Expired: refreshTokenExpired})
+		scribleDB := db.NewScribleClient()
+		scribleDB.Query().Write("refresh_token", claims["id"].(string), RefreshDTO{RefreshToken: encryptionRefreshToken, Expired: refreshTokenExpired})
 	}()
 
 	return TokenDTO{

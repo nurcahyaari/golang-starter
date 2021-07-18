@@ -1,7 +1,7 @@
 package encryption_test
 
 import (
-	"golang-starter/infrastructure/utils/encryption"
+	"golang-starter/internal/utils/encryption"
 	"testing"
 )
 

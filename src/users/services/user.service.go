@@ -1,8 +1,8 @@
 package services
 
 import (
-	"golang-starter/infrastructure/utils/auth"
-	"golang-starter/infrastructure/utils/response"
+	"golang-starter/internal/utils/auth"
+	"golang-starter/internal/utils/response"
 	"golang-starter/src/users/dto"
 	"golang-starter/src/users/models"
 	"golang-starter/src/users/repositories"

@@ -1,8 +1,8 @@
 package router
 
 import (
-	"golang-starter/infrastructure/db/onlinedb"
-	"golang-starter/infrastructure/middleware"
+	"golang-starter/internal/db"
+	"golang-starter/internal/middleware"
 	"golang-starter/src/products/controllers"
 	"golang-starter/src/products/repositories"
 	"golang-starter/src/products/services"
@@ -11,7 +11,7 @@ import (
 )
 
 func RecipesRoute(app *fiber.App) {
-	db := onlinedb.Load()
+	db := db.NewMysqlClient()
 	productRepository := repositories.ProvideProductRepostiory(db)
 	productService := services.ProvideProductService(productRepository)
 	productController := controllers.ProvideProductController(productService)

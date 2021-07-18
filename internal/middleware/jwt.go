@@ -2,10 +2,10 @@ package middleware
 
 import (
 	"fmt"
-	"golang-starter/infrastructure/config"
-	"golang-starter/infrastructure/db/localdb"
-	"golang-starter/infrastructure/utils/auth"
-	"golang-starter/infrastructure/utils/response"
+	"golang-starter/internal/config"
+	"golang-starter/internal/db"
+	"golang-starter/internal/utils/auth"
+	"golang-starter/internal/utils/response"
 	"net/http"
 	"strings"
 	"time"
@@ -97,7 +97,7 @@ func JwtVerifyRefresh(ctx *fiber.Ctx) error {
 		return ctx.Status(401).JSON(res)
 	}
 
-	// check is refresh_token available in localDB?
+	// check is refresh_token available in scribleDB?
 	userID := token.Claims.(jwt.MapClaims)["id"].(string)
 
 	if userID == "" {
@@ -107,9 +107,9 @@ func JwtVerifyRefresh(ctx *fiber.Ctx) error {
 		}
 		return ctx.Status(401).JSON(res)
 	}
-	localDB := localdb.Load()
+	scribleDB := db.NewScribleClient()
 	refreshToken := new(auth.RefreshDTO)
-	err = localDB.Query().Read("refresh_token", userID, &refreshToken)
+	err = scribleDB.Query().Read("refresh_token", userID, &refreshToken)
 
 	if err != nil || refreshToken.Expired < time.Now().Unix() {
 		res := response.ResponseDTO{

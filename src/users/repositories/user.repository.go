@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"golang-starter/infrastructure/db/onlinedb"
+	"golang-starter/internal/db"
 	"golang-starter/src/users/models"
 )
 
@@ -12,10 +12,10 @@ type UserRepository interface {
 }
 
 type userRepository struct {
-	DB onlinedb.Database
+	DB db.MysqlDB
 }
 
-func ProvideUserRepository(DB onlinedb.Database) UserRepository {
+func ProvideUserRepository(DB db.MysqlDB) UserRepository {
 	return &userRepository{
 		DB: DB,
 	}
