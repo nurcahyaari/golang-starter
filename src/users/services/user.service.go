@@ -7,7 +7,7 @@ import (
 	"golang-starter/src/users/models"
 	"golang-starter/src/users/repositories"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
 

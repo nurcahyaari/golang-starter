@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
-	"github.com/dgrijalva/jwt-go/request"
+	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/request"
 
 	"github.com/gofiber/fiber/v2"
 )
