@@ -2,10 +2,10 @@ package middleware
 
 import (
 	"fmt"
-	"golang-starter/internal/config"
-	"golang-starter/internal/db"
-	"golang-starter/internal/utils/auth"
-	"golang-starter/internal/utils/response"
+
+	"golang-starter/config"
+
+	"golang-starter/internal/web"
 	"net/http"
 	"strings"
 	"time"
@@ -28,11 +28,11 @@ func JwtVerifyToken(ctx *fiber.Ctx) error {
 	JwtToken := strings.Replace(ctx.Get("Authorization"), fmt.Sprintf("%s ", config.Get().JwtTokenType), "", 1)
 
 	if JwtToken == "" {
-		res := response.ResponseDTO{
+		res := web.Response{
 			Code:    401,
 			Message: "Unauthorized",
 		}
-		return ctx.Status(401).JSON(res)
+		return web.JsonResponse(ctx, res.Code, res.Message, nil)
 	}
 
 	req := new(http.Request)
@@ -53,11 +53,11 @@ func JwtVerifyToken(ctx *fiber.Ctx) error {
 	})
 
 	if err != nil || !token.Valid {
-		res := response.ResponseDTO{
+		res := web.Response{
 			Code:    401,
 			Message: err.Error(),
 		}
-		return ctx.Status(401).JSON(res)
+		return web.JsonResponse(ctx, res.Code, res.Message, nil)
 	}
 
 	return ctx.Next()
@@ -67,11 +67,11 @@ func JwtVerifyRefresh(ctx *fiber.Ctx) error {
 	JwtToken := strings.Replace(ctx.Get("Authorization"), fmt.Sprintf("%s ", config.Get().JwtTokenType), "", 1)
 
 	if JwtToken == "" {
-		res := response.ResponseDTO{
+		res := web.Response{
 			Code:    401,
 			Message: "Unauthorized",
 		}
-		return ctx.Status(401).JSON(res)
+		return web.JsonResponse(ctx, res.Code, res.Message, nil)
 	}
 	req := new(http.Request)
 	req.Header = http.Header{}
@@ -90,33 +90,32 @@ func JwtVerifyRefresh(ctx *fiber.Ctx) error {
 	})
 
 	if err != nil || !token.Valid {
-		res := response.ResponseDTO{
+		res := web.Response{
 			Code:    401,
 			Message: err.Error(),
 		}
-		return ctx.Status(401).JSON(res)
+		return web.JsonResponse(ctx, res.Code, res.Message, nil)
 	}
 
 	// check is refresh_token available in scribleDB?
 	userID := token.Claims.(jwt.MapClaims)["id"].(string)
 
 	if userID == "" {
-		res := response.ResponseDTO{
+		res := web.Response{
 			Code:    401,
 			Message: "Token not found",
 		}
-		return ctx.Status(401).JSON(res)
+		return web.JsonResponse(ctx, res.Code, res.Message, nil)
 	}
-	scribleDB := db.NewScribleClient()
-	refreshToken := new(auth.RefreshDTO)
-	err = scribleDB.Query().Read("refresh_token", userID, &refreshToken)
+	rawExp := token.Claims.(jwt.MapClaims)["exp"].(float64)
+	exp := int64(rawExp)
 
-	if err != nil || refreshToken.Expired < time.Now().Unix() {
-		res := response.ResponseDTO{
+	if exp < time.Now().Unix() {
+		res := web.Response{
 			Code:    401,
 			Message: "Refresh Token was expired",
 		}
-		return ctx.Status(401).JSON(res)
+		return web.JsonResponse(ctx, res.Code, res.Message, nil)
 	}
 
 	ctx.Context().Request.Header.Set("userID", userID)

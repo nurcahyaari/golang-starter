@@ -1,4 +1,4 @@
-package models
+package entities
 
 type Users struct {
 	UserID   string `gorm:"column:user_id;primary_key" json:"user_id"`

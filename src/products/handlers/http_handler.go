@@ -1,4 +1,4 @@
-package controllers
+package handlers
 
 import (
 	"golang-starter/src/products/models"
@@ -7,23 +7,23 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type ProductController interface {
+type ProductHandlers interface {
 	GetProducts(ctx *fiber.Ctx) error
 }
 
-type productController struct {
+type productHandlers struct {
 	ProductService services.ProductService
 }
 
-func ProvideProductController(
+func NewHttpHandler(
 	productService services.ProductService,
-) ProductController {
-	return &productController{
+) ProductHandlers {
+	return &productHandlers{
 		ProductService: productService,
 	}
 }
 
-func (services *productController) GetProducts(ctx *fiber.Ctx) error {
+func (services *productHandlers) GetProducts(ctx *fiber.Ctx) error {
 	var products []models.Products
 	// get all products
 	products = services.ProductService.GetProducts()

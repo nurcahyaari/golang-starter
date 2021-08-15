@@ -13,7 +13,7 @@ type productService struct {
 	ProductRepository repositories.ProductRepository
 }
 
-func ProvideProductService(
+func NewProductService(
 	productRepository repositories.ProductRepository,
 ) ProductService {
 	return &productService{

@@ -17,6 +17,7 @@ var doOnce sync.Once
 type appConfigStruct struct {
 	AppPort string
 	AppKey  string // all off local encryption will use this key
+	LogPath string
 	// database config
 	DbDialeg   string
 	DbHost     string
@@ -50,6 +51,7 @@ func load() appConfigStruct {
 	return appConfigStruct{
 		AppPort: os.Getenv("APP_PORT"),
 		AppKey:  os.Getenv("APP_KEY"),
+		LogPath: os.Getenv("LOG_PATH"),
 		// db configure
 		DbDialeg:   os.Getenv("DB_DIALEG"),
 		DbHost:     os.Getenv("DB_HOST"),

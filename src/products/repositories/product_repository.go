@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"golang-starter/internal/db"
+	"golang-starter/infrastructures/db"
 	"golang-starter/src/products/models"
 )
 
@@ -16,7 +16,7 @@ type productRepository struct {
 	DB db.MysqlDB
 }
 
-func ProvideProductRepostiory(DB db.MysqlDB) ProductRepository {
+func NewProductRepostiory(DB db.MysqlDB) ProductRepository {
 	return &productRepository{
 		DB: DB,
 	}

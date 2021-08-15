@@ -1,8 +1,11 @@
 package auth
 
 import (
-	"golang-starter/internal/config"
-	"golang-starter/internal/db"
+	"fmt"
+	"golang-starter/config"
+	"golang-starter/infrastructures/local_db"
+	"golang-starter/infrastructures/logger"
+
 	"golang-starter/internal/utils/encryption"
 	"log"
 	"time"
@@ -10,27 +13,39 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-type TokenDTO struct {
+type TokenStruct struct {
 	Type         string `json:"type"`
 	Token        string `json:"token"`
 	RefreshToken string `json:"refresh_token"`
 }
 
-type RefreshDTO struct {
+type RefreshTokenStruct struct {
 	RefreshToken string `json:"refresh_token"`
 	Expired      int64  `json:"expired"`
+}
+
+type JwtTokenInterface interface {
+	Sign(claims jwt.MapClaims) TokenStruct
+}
+
+type jwtToken struct {
+	cached local_db.ScribleDB
+}
+
+func NewJwt(cached local_db.ScribleDB) JwtTokenInterface {
+	return &jwtToken{cached: cached}
 }
 
 // Sign ins method to generate jwt token and refresh token
 // it has ... parameter
 // userdata is map data, it's using for passing user data
 // default expired time is 60 second
-func Sign(claims jwt.MapClaims) TokenDTO {
+func (o jwtToken) Sign(claims jwt.MapClaims) TokenStruct {
 	timeNow := time.Now()
-	tokenExpired := timeNow.Add(time.Second * config.Get().JwtTokenExpired).Unix()
+	tokenExpired := timeNow.Add(config.Get().JwtTokenExpired).Unix()
 
 	if claims["id"] == nil {
-		return TokenDTO{}
+		return TokenStruct{}
 	}
 
 	token := jwt.New(jwt.SigningMethodRS256)
@@ -39,22 +54,22 @@ func Sign(claims jwt.MapClaims) TokenDTO {
 	var _, checkIat = claims["exp"]
 
 	// if user didn't define claims expired
-	if checkExp == false {
+	if !checkExp {
 		claims["exp"] = tokenExpired
 	}
 	// if user didn't define claims iat
-	if checkIat == false {
+	if !checkIat {
 		claims["iat"] = timeNow.Unix()
 	}
 	claims["token_type"] = "access_token"
 
 	token.Claims = claims
 
-	authToken := new(TokenDTO)
+	authToken := new(TokenStruct)
 	tokenString, err := token.SignedString(config.Get().PrivateKey)
 	if err != nil {
 		log.Fatalln(err)
-		return TokenDTO{}
+		return TokenStruct{}
 	}
 
 	authToken.Token = tokenString
@@ -62,7 +77,7 @@ func Sign(claims jwt.MapClaims) TokenDTO {
 
 	//create refresh token
 	refreshToken := jwt.New(jwt.SigningMethodRS256)
-	refreshTokenExpired := timeNow.Add(time.Second * config.Get().JwtRefreshExpired).Unix()
+	refreshTokenExpired := timeNow.Add(config.Get().JwtRefreshExpired).Unix()
 
 	claims["exp"] = refreshTokenExpired
 	claims["token_type"] = "refresh_token"
@@ -71,18 +86,33 @@ func Sign(claims jwt.MapClaims) TokenDTO {
 	refreshTokenString, err := refreshToken.SignedString(config.Get().PrivateKey)
 
 	if err != nil {
-		return TokenDTO{}
+		return TokenStruct{}
 	}
 	authToken.RefreshToken = refreshTokenString
 
-	//save token to local db
+	//save token to redis db
 	go func() {
-		encryptionRefreshToken := encryption.AesCFBEncryption(refreshTokenString, config.Get().AppKey)
-		scribleDB := db.NewScribleClient()
-		scribleDB.Query().Write("refresh_token", claims["id"].(string), RefreshDTO{RefreshToken: encryptionRefreshToken, Expired: refreshTokenExpired})
+		encryptedRefreshToken := encryption.AesCFBEncryption(refreshTokenString, config.Get().AppKey)
+		if err != nil {
+			logger.Log.Errorln(err)
+		}
+		// check data type of the claims
+		switch claims["id"].(type) {
+		case int:
+			claims["id"] = fmt.Sprintf("%d", claims["id"].(int))
+		case float64:
+			claims["id"] = fmt.Sprintf("%d", int(claims["id"].(float64)))
+		default:
+		}
+		o.cached.Query().Write("refresh_token", claims["id"].(string), RefreshTokenStruct{RefreshToken: encryptedRefreshToken, Expired: refreshTokenExpired})
+		if err != nil {
+			logger.Log.Infoln("Failed to save refresh token to redis, with err: ", err)
+		} else {
+			logger.Log.Infoln("Successfully to save refresh token to redis")
+		}
 	}()
 
-	return TokenDTO{
+	return TokenStruct{
 		Type:         "Bearer",
 		Token:        authToken.Token,
 		RefreshToken: authToken.RefreshToken,
