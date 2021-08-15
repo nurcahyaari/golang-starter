@@ -5,6 +5,7 @@ Golang base project using fiber framework, and implement the Clean code Architec
 <br>
  - I migrated the structures, like adding infrastructures, move the config folder from internal/config into config/
  - I also don't test after the rewriting, when you clone it and try to implement to your projects, it might need some changes
+ - the old version placed on dep-0.0.1 branch
 <br><br><br> 
 ### Folder Structure
 
