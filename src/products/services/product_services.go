@@ -1,12 +1,12 @@
 package services
 
 import (
-	"golang-starter/src/products/models"
+	"golang-starter/src/products/entities"
 	"golang-starter/src/products/repositories"
 )
 
 type ProductService interface {
-	GetProducts() []models.Products
+	GetProducts() []entities.Products
 }
 
 type productService struct {
@@ -21,7 +21,7 @@ func NewProductService(
 	}
 }
 
-func (repo *productService) GetProducts() []models.Products {
-	// var products []models.Products
+func (repo *productService) GetProducts() []entities.Products {
+	// var products []entities.Products
 	return repo.ProductRepository.FindAll()
 }

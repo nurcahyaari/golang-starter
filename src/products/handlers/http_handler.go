@@ -1,8 +1,11 @@
 package handlers
 
 import (
-	"golang-starter/src/products/models"
+	"golang-starter/internal/web"
+	"golang-starter/src/products/dto"
+	"golang-starter/src/products/entities"
 	"golang-starter/src/products/services"
+	"net/http"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -24,9 +27,11 @@ func NewHttpHandler(
 }
 
 func (services *productHandlers) GetProducts(ctx *fiber.Ctx) error {
-	var products []models.Products
+	var products []entities.Products
 	// get all products
 	products = services.ProductService.GetProducts()
 
-	return ctx.JSON(products)
+	productsResponse := dto.ParseFromEntities(products)
+
+	return web.JsonResponse(ctx, http.StatusOK, "", productsResponse)
 }

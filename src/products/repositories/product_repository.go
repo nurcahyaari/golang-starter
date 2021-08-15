@@ -2,14 +2,14 @@ package repositories
 
 import (
 	"golang-starter/infrastructures/db"
-	"golang-starter/src/products/models"
+	"golang-starter/src/products/entities"
 )
 
 type ProductRepository interface {
-	FindAll() []models.Products
-	FindByID(id uint) models.Products
-	Save(product models.Products) models.Products
-	Delete(product models.Products)
+	FindAll() []entities.Products
+	FindByID(id uint) entities.Products
+	Save(product entities.Products) entities.Products
+	Delete(product entities.Products)
 }
 
 type productRepository struct {
@@ -22,26 +22,26 @@ func NewProductRepostiory(DB db.MysqlDB) ProductRepository {
 	}
 }
 
-func (p *productRepository) FindAll() []models.Products {
-	var products []models.Products
+func (p *productRepository) FindAll() []entities.Products {
+	var products []entities.Products
 	p.DB.Query().Find(&products)
 
 	return products
 }
 
-func (p *productRepository) FindByID(id uint) models.Products {
-	var product models.Products
+func (p *productRepository) FindByID(id uint) entities.Products {
+	var product entities.Products
 	p.DB.Query().First(&product, id)
 
 	return product
 }
 
-func (p *productRepository) Save(product models.Products) models.Products {
+func (p *productRepository) Save(product entities.Products) entities.Products {
 	p.DB.Query().Save(&product)
 
 	return product
 }
 
-func (p *productRepository) Delete(product models.Products) {
+func (p *productRepository) Delete(product entities.Products) {
 	p.DB.Query().Delete(&product)
 }
