@@ -6,7 +6,7 @@ import (
 )
 
 func TestEncryptDecryptAesCBF(t *testing.T) {
-	cipherText := encryption.AesCFBEncryption(
+	cipherText, _ := encryption.AesCFBEncryption(
 		"saya makan beras",
 		"12345678123456781234567812345678",
 	)
@@ -15,7 +15,7 @@ func TestEncryptDecryptAesCBF(t *testing.T) {
 		t.Errorf("Maybe there was an incorrect when encrypt this data")
 	}
 
-	plainText := encryption.AesCFBDecryption(
+	plainText, _ := encryption.AesCFBDecryption(
 		cipherText,
 		"12345678123456781234567812345678",
 	)
@@ -25,11 +25,7 @@ func TestEncryptDecryptAesCBF(t *testing.T) {
 	}
 }
 
-// func TestDecryptionAesCBF(t *testing.T) {
-// 	plainText
-// }
-
-func TestaddKeyLen(t *testing.T) {
+func TestAddKeyLen(t *testing.T) {
 	newText := encryption.AddKeyLen("greg")
 
 	if len(newText) != 32 {

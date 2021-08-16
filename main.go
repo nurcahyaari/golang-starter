@@ -30,7 +30,8 @@ func main() {
 			ScribleDB: scribleDB,
 		},
 	}
-	routes.NewHttpRoute(routeStruct)
+	router := routes.NewHttpRoute(routeStruct)
+	router.GetRoutes()
 
 	app.Listen(fmt.Sprintf(":%s", appPort))
 }

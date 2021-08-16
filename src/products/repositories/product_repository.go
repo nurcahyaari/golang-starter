@@ -5,7 +5,7 @@ import (
 	"golang-starter/src/products/entities"
 )
 
-type ProductRepository interface {
+type ProductRepositoryInterface interface {
 	FindAll() []entities.Products
 	FindByID(id uint) entities.Products
 	Save(product entities.Products) entities.Products
@@ -16,7 +16,7 @@ type productRepository struct {
 	DB db.MysqlDB
 }
 
-func NewProductRepostiory(DB db.MysqlDB) ProductRepository {
+func NewProductRepostiory(DB db.MysqlDB) ProductRepositoryInterface {
 	return &productRepository{
 		DB: DB,
 	}
@@ -24,24 +24,24 @@ func NewProductRepostiory(DB db.MysqlDB) ProductRepository {
 
 func (p *productRepository) FindAll() []entities.Products {
 	var products []entities.Products
-	p.DB.Query().Find(&products)
+	p.DB.DB().Find(&products)
 
 	return products
 }
 
 func (p *productRepository) FindByID(id uint) entities.Products {
 	var product entities.Products
-	p.DB.Query().First(&product, id)
+	p.DB.DB().First(&product, id)
 
 	return product
 }
 
 func (p *productRepository) Save(product entities.Products) entities.Products {
-	p.DB.Query().Save(&product)
+	p.DB.DB().Save(&product)
 
 	return product
 }
 
 func (p *productRepository) Delete(product entities.Products) {
-	p.DB.Query().Delete(&product)
+	p.DB.DB().Delete(&product)
 }

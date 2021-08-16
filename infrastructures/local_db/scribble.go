@@ -7,7 +7,7 @@ import (
 )
 
 type ScribleDB interface {
-	Query() *scribble.Driver
+	DB() *scribble.Driver
 }
 
 type scribleDB struct {
@@ -25,6 +25,6 @@ func NewScribleClient() ScribleDB {
 	}
 }
 
-func (db *scribleDB) Query() *scribble.Driver {
+func (db *scribleDB) DB() *scribble.Driver {
 	return db.db
 }

@@ -24,23 +24,20 @@ func (c *RouterStruct) GetRoutes() {
 		return c.Send([]byte("Hello this is my first route in go fiber"))
 	})
 
+	webRouterConfig := web.RouterStruct{
+		Web:       c.Web,
+		MysqlDB:   c.MysqlDB,
+		ScribleDB: c.ScribleDB,
+	}
 	// registering route from another modules
 	productRouterStruct := productRoute.RouterStruct{
-		RouterStruct: web.RouterStruct{
-			Web:       c.Web,
-			MysqlDB:   c.MysqlDB,
-			ScribleDB: c.ScribleDB,
-		},
+		RouterStruct: webRouterConfig,
 	}
 	productRouter := productRoute.NewHttpRoute(productRouterStruct)
 	productRouter.GetRoute()
 
 	userRouterStruct := userRoute.RouterStruct{
-		RouterStruct: web.RouterStruct{
-			Web:       c.Web,
-			MysqlDB:   c.MysqlDB,
-			ScribleDB: c.ScribleDB,
-		},
+		RouterStruct: webRouterConfig,
 	}
 	userRouter := userRoute.NewHttpRoute(userRouterStruct)
 	userRouter.GetRoute()

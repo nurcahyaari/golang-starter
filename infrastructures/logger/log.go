@@ -3,6 +3,7 @@ package logger
 import (
 	"golang-starter/config"
 	"log"
+	"os"
 	"sync"
 
 	"github.com/sirupsen/logrus"
@@ -22,6 +23,14 @@ func init() {
 func newLogger() *logrus.Logger {
 	Log := logrus.New()
 	log.Println("Setup Logger")
+	if config.Get().LogPath != "" {
+		err := os.Mkdir(config.Get().LogPath, 0755)
+		if err != nil {
+			log.Println("Failed to create log path")
+		}
+		log.Println("Success to create log path")
+	}
+
 	rotateFileHook, err := rotatefilehook.NewRotateFileHook(rotatefilehook.RotateFileConfig{
 		Filename:   config.Get().LogPath,
 		MaxSize:    1, // megabytes

@@ -21,7 +21,7 @@ func AddKeyLen(encryptionKey string) string {
 }
 
 // encryptionKey should have 32 of length
-func AesCFBDecryption(text string, encryptionKey string) string {
+func AesCFBDecryption(text string, encryptionKey string) (string, error) {
 	encryptionKey = AddKeyLen(encryptionKey)
 
 	key, _ := hex.DecodeString(
@@ -31,7 +31,7 @@ func AesCFBDecryption(text string, encryptionKey string) string {
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
 	// The IV needs to be unique, but not secure. Therefore it's common to
@@ -49,20 +49,20 @@ func AesCFBDecryption(text string, encryptionKey string) string {
 	// fmt.Printf("%s", ciphertext)
 	// Output: some plaintext
 
-	return string(ciphertext)
+	return string(ciphertext), nil
 }
 
 // ecryptionKey length must 32
-func AesCFBEncryption(text string, encryptionKey string) string {
+func AesCFBEncryption(text string, encryptionKey string) (string, error) {
 	encryptionKey = AddKeyLen(encryptionKey)
 	// Load secret key from app config
-	key, _ := hex.DecodeString(
-		encryptionKey,
-	)
+	key := []byte(encryptionKey)
+
 	plaintext := []byte(text)
 	block, err := aes.NewCipher(key)
+
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
 	// The IV needs to be unique, but not secure. Therefore it's common to
@@ -80,6 +80,6 @@ func AesCFBEncryption(text string, encryptionKey string) string {
 	// (i.e. by using crypto/hmac) as well as being encrypted in order to
 	// be secure.
 
-	return fmt.Sprintf("%x", ciphertext)
+	return fmt.Sprintf("%x", ciphertext), nil
 
 }

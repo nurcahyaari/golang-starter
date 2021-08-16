@@ -10,11 +10,11 @@ type ProductService interface {
 }
 
 type productService struct {
-	ProductRepository repositories.ProductRepository
+	ProductRepository repositories.ProductRepositoryInterface
 }
 
 func NewProductService(
-	productRepository repositories.ProductRepository,
+	productRepository repositories.ProductRepositoryInterface,
 ) ProductService {
 	return &productService{
 		ProductRepository: productRepository,
