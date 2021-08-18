@@ -26,6 +26,8 @@ here how golang-started manage directory:
 all global setting will place in internal folder
 all module will place in src
 
+There is detailed article about folder structure written on <a href="https://nurcahyaari.medium.com/how-i-implement-clean-code-architecture-on-golang-projects-68be58830621">medium by Ari</a>
+
 # Config
 Config modules for the app
 
