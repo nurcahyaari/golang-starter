@@ -13,24 +13,18 @@ import (
 
 var once sync.Once
 
-type RedisDBInterface interface {
-	DB() *redis.Client
-	Cache() *cache.Cache
-	Close() error
-}
-
-type redisDB struct {
+type RedisImpl struct {
 	db    *redis.Client
 	cache *cache.Cache
 }
 
-func NewRedisClient() RedisDBInterface {
+func NewRedisClient() *RedisImpl {
 	log.Println("Initialize Redis connection")
-	host := fmt.Sprintf("%s:%s", config.Get().RedisHost, config.Get().RedisPort)
+	host := fmt.Sprintf("%s:%s", config.Get().Cache.Redis.Host, config.Get().Cache.Redis.Port)
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     host,
-		Password: config.Get().RedisPassword, // no password set
-		DB:       config.Get().RedisDB,       // use default DB
+		Password: config.Get().Cache.Redis.Pass, // no password set
+		DB:       config.Get().Cache.Redis.DB,   // use default DB
 	})
 
 	ctx := rdb.Context()
@@ -45,20 +39,20 @@ func NewRedisClient() RedisDBInterface {
 		Redis:      rdb,
 	})
 
-	return &redisDB{
+	return &RedisImpl{
 		db:    rdb,
 		cache: cache,
 	}
 }
 
-func (c redisDB) DB() *redis.Client {
+func (c RedisImpl) DB() *redis.Client {
 	return c.db
 }
 
-func (c redisDB) Cache() *cache.Cache {
+func (c RedisImpl) Cache() *cache.Cache {
 	return c.cache
 }
 
-func (c redisDB) Close() error {
+func (c RedisImpl) Close() error {
 	return c.db.Close()
 }

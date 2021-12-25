@@ -9,26 +9,23 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
-type MysqlDB interface {
-	DB() *gorm.DB
-}
-
-type mysqlDB struct {
+type MysqlImpl struct {
 	db *gorm.DB
 }
 
-func NewMysqlClient() MysqlDB {
+func NewMysqlClient() *MysqlImpl {
 	// log.Println("Initialize Database connection")
 	var err error
 	var db *gorm.DB
-	dbDialeg := config.Get().DbDialeg
-	dbHost := config.Get().DbHost
-	dbPort := config.Get().DbPort
-	dbName := config.Get().DbName
-	dbUser := config.Get().DbUsername
-	dbPassword := config.Get().DbPassword
+	dbDialeg := "mysql"
+	dbHost := config.Get().DB.Mysql.Host
+	dbPort := config.Get().DB.Mysql.Port
+	dbName := config.Get().DB.Mysql.Name
+	dbUser := config.Get().DB.Mysql.User
+	dbPassword := config.Get().DB.Mysql.Pass
 
-	sHost := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPassword, dbHost, dbPort, dbName)
+	sHost := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", dbUser, dbPassword, dbHost, dbPort, dbName)
+
 	sDialeg := dbDialeg
 
 	db, err = gorm.Open(sDialeg, sHost)
@@ -36,15 +33,15 @@ func NewMysqlClient() MysqlDB {
 
 	if err != nil {
 		log.Println(fmt.Sprintf("Error to loading Database %s", err))
-		return nil
+		panic(err)
 	}
 	// log.Println("Database was connected")
-	return &mysqlDB{
+	return &MysqlImpl{
 		db: db,
 	}
 }
 
-func (c mysqlDB) DB() *gorm.DB {
+func (c MysqlImpl) DB() *gorm.DB {
 	return c.db
 }
 
