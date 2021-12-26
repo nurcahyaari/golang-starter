@@ -2,9 +2,15 @@
 .env
 
 temp/
+tmp/
 .idea
 
 src/user_cart
 
 # ignore wire
 wire_gen.go
+
+
+# RSA key
+.public
+.private
