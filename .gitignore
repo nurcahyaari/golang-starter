@@ -1,6 +1,7 @@
 # ignore env
 .env
 
+build/
 temp/
 tmp/
 .idea

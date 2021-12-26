@@ -4,7 +4,7 @@ import (
 	"golang-starter/internal/logger"
 )
 
-//go:generate wire
+//go:generate go run github.com/google/wire/cmd/wire
 
 func main() {
 	// you didn't define port in env file
