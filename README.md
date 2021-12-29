@@ -1,5 +1,5 @@
 # golang-starter
-Golang base project using fiber framework, and implement the Clean code Architecture
+Golang code boilerplate inspired by clean architecture
 <br><br>
 <b>Alert</b>
 <br>
