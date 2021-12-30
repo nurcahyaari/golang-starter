@@ -38,10 +38,10 @@ var jwtAuth = wire.NewSet(
 
 // product
 var productRepo = wire.NewSet(
-	productrepo.NewProductRepostiory,
+	productrepo.NewRepository,
 	wire.Bind(
-		new(productrepo.ProductRepository),
-		new(*productrepo.ProductRepositoryImpl),
+		new(productrepo.Repositories),
+		new(*productrepo.RepositoriesImpl),
 	),
 )
 
@@ -55,10 +55,10 @@ var productSvc = wire.NewSet(
 
 // user
 var userMysqlRepo = wire.NewSet(
-	userrepo.NewUserMysqlRepository,
+	userrepo.NewRepository,
 	wire.Bind(
-		new(userrepo.UserMysqlRepository),
-		new(*userrepo.UserMysqlRepositoryImpl),
+		new(userrepo.Repositories),
+		new(*userrepo.RepositoriesImpl),
 	),
 )
 var userScribleRepo = wire.NewSet(
