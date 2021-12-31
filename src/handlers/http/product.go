@@ -1,28 +1,30 @@
 package http
 
 import (
+	"fmt"
 	httpresponse "golang-starter/internal/protocols/http/response"
 	"net/http"
 	"strconv"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/go-chi/chi/v5"
 )
 
-func (h HttpHandlerImpl) GetProducts(ctx *fiber.Ctx) error {
+func (h HttpHandlerImpl) GetProducts(w http.ResponseWriter, r *http.Request) {
 	// get all products
 	// products := h.ProductService.GetProducts()
 
 	// productsResponse := dto.ParseFromEntities(products)
 
 	// return httpresponse.JsonResponse(ctx, http.StatusOK, "", productsResponse)
-	return httpresponse.TextResponse(ctx, http.StatusOK, "OK")
+	httpresponse.Text(w, http.StatusOK, "OK")
 }
 
-func (h HttpHandlerImpl) GetProductByID(ctx *fiber.Ctx) error {
-	rawProduct_id := ctx.Params("product_id")
+func (h HttpHandlerImpl) GetProductByID(w http.ResponseWriter, r *http.Request) {
+	rawProduct_id := chi.URLParam(r, "product_id")
 	product_id, err := strconv.Atoi(rawProduct_id)
 	if err != nil {
-		return httpresponse.JsonResponse(ctx, http.StatusBadRequest, err.Error(), nil)
+		httpresponse.Json(w, http.StatusBadRequest, err.Error(), nil)
+		return
 	}
 
 	// product := h.ProductService.GetProductByProductID(product_id)
@@ -30,10 +32,10 @@ func (h HttpHandlerImpl) GetProductByID(ctx *fiber.Ctx) error {
 	// productResponse := dto.ParseFromEntity(product)
 
 	// return httpresponse.JsonResponse(ctx, http.StatusOK, "", productResponse)
-	return httpresponse.TextResponse(ctx, http.StatusOK, product_id)
+	httpresponse.Text(w, http.StatusOK, fmt.Sprintf("%d", product_id))
 }
 
-func (h HttpHandlerImpl) DeleteProductByID(ctx *fiber.Ctx) error {
+func (h HttpHandlerImpl) DeleteProductByID(w http.ResponseWriter, r *http.Request) {
 	// rawProduct_id := ctx.Params("product_id")
 	// product_id, err := strconv.Atoi(rawProduct_id)
 	// if err != nil {
@@ -46,10 +48,10 @@ func (h HttpHandlerImpl) DeleteProductByID(ctx *fiber.Ctx) error {
 	// }
 
 	// return httpresponse.JsonResponse(ctx, http.StatusOK, "success to delete product", nil)
-	return httpresponse.TextResponse(ctx, http.StatusOK, "Success")
+	httpresponse.Text(w, http.StatusOK, "Success")
 }
 
-func (h HttpHandlerImpl) CreateNewProduct(ctx *fiber.Ctx) error {
+func (h HttpHandlerImpl) CreateNewProduct(w http.ResponseWriter, r *http.Request) {
 	// productRequestBody := new(dto.ProductsRequestBody)
 	// if err := ctx.BodyParser(productRequestBody); err != nil {
 	// 	return httpresponse.JsonResponse(ctx, http.StatusBadRequest, err.Error(), nil)
@@ -64,5 +66,5 @@ func (h HttpHandlerImpl) CreateNewProduct(ctx *fiber.Ctx) error {
 	// productResponse := dto.ParseFromEntity(product)
 
 	// return httpresponse.JsonResponse(ctx, http.StatusOK, "", productResponse)
-	return httpresponse.TextResponse(ctx, http.StatusOK, "Success")
+	httpresponse.Text(w, http.StatusOK, "Success")
 }

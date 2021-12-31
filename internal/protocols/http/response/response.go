@@ -1,27 +1,33 @@
 package response
 
 import (
-	"fmt"
-
-	"github.com/gofiber/fiber/v2"
+	"encoding/json"
+	"net/http"
 )
 
 type Response struct {
-	Code    int         `json:"code"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data"`
+	Error   *string      `json:"error,omitempty"`
+	Message *string      `json:"message,omitempty"`
+	Data    *interface{} `json:"data,omitempty"`
 }
 
-func JsonResponse(ctx *fiber.Ctx, statusCode int, message string, data interface{}) error {
-	resp := Response{
-		Code:    statusCode,
-		Message: message,
-		Data:    data,
+func Json(w http.ResponseWriter, httpCode int, message string, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(httpCode)
+	res := Response{
+		Message: &message,
+		Data:    &data,
 	}
-
-	return ctx.Status(statusCode).JSON(resp)
+	json.NewEncoder(w).Encode(res)
 }
 
-func TextResponse(ctx *fiber.Ctx, statusCode int, message interface{}) error {
-	return ctx.Status(statusCode).Send([]byte(fmt.Sprintf("%v", message)))
+func Text(w http.ResponseWriter, httpCode int, message string) {
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(httpCode)
+	w.Write([]byte(message))
+}
+
+// TODO: implement response error
+func Err(w http.ResponseWriter, err error) {
+
 }

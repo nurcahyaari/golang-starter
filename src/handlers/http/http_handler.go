@@ -4,7 +4,7 @@ import (
 	productsvc "golang-starter/src/domains/product/services"
 	usersvc "golang-starter/src/domains/user/services"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/go-chi/chi/v5"
 )
 
 type HttpHandlerImpl struct {
@@ -22,7 +22,7 @@ func NewHttpHandler(
 	}
 }
 
-func (h *HttpHandlerImpl) Router(r *fiber.App) {
+func (h *HttpHandlerImpl) Router(r *chi.Mux) {
 	r.Get("/products", h.GetProducts)
-	r.Get("/products/:product_id", h.GetProductByID)
+	r.Get("/products/{product_id}", h.GetProductByID)
 }

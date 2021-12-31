@@ -3,7 +3,7 @@ package router
 import (
 	"golang-starter/src/handlers/http"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/go-chi/chi/v5"
 )
 
 type HttpRouterImpl struct {
@@ -18,6 +18,6 @@ func NewHttpRoute(
 	}
 }
 
-func (h *HttpRouterImpl) Router(r *fiber.App) {
+func (h *HttpRouterImpl) Router(r *chi.Mux) {
 	h.handlers.Router(r)
 }

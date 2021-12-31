@@ -3,11 +3,9 @@ package http
 import (
 	httpresponse "golang-starter/internal/protocols/http/response"
 	"net/http"
-
-	"github.com/gofiber/fiber/v2"
 )
 
-func (h HttpHandlerImpl) Login(ctx *fiber.Ctx) error {
+func (h HttpHandlerImpl) Login(w http.ResponseWriter, r *http.Request) {
 	// userData := new(dto.UserRequestLoginBody)
 
 	// if err := ctx.BodyParser(userData); err != nil {
@@ -20,10 +18,10 @@ func (h HttpHandlerImpl) Login(ctx *fiber.Ctx) error {
 	// }
 
 	// return httpresponse.JsonResponse(ctx, http.StatusOK, "", res)
-	return httpresponse.TextResponse(ctx, http.StatusOK, "Success")
+	httpresponse.Text(w, http.StatusOK, "Success")
 }
 
-func (h HttpHandlerImpl) Refresh(ctx *fiber.Ctx) error {
+func (h HttpHandlerImpl) Refresh(w http.ResponseWriter, r *http.Request) {
 	// userID := ctx.Get("userID")
 
 	// res, err := h.UserService.RefreshToken(userID)
@@ -33,5 +31,5 @@ func (h HttpHandlerImpl) Refresh(ctx *fiber.Ctx) error {
 	// }
 
 	// return httpresponse.JsonResponse(ctx, http.StatusOK, "", res)
-	return httpresponse.TextResponse(ctx, http.StatusOK, "Success")
+	httpresponse.Text(w, http.StatusOK, "Success")
 }
