@@ -11,7 +11,7 @@ type ScribleImpl struct {
 }
 
 func NewScribleClient() *ScribleImpl {
-	db, err := scribble.New("temp/db", nil)
+	db, err := scribble.New("tmp/db", nil)
 	if err != nil {
 		log.Println("Error", err)
 	}
