@@ -9,11 +9,11 @@ import (
 	"golang-starter/internal/protocols/http"
 	httprouter "golang-starter/internal/protocols/http/router"
 	jwtauth "golang-starter/internal/utils/auth"
-	productrepo "golang-starter/src/domains/product/repositories"
-	productsvc "golang-starter/src/domains/product/services"
-	userrepo "golang-starter/src/domains/user/repositories"
-	usersvc "golang-starter/src/domains/user/services"
 	httphandler "golang-starter/src/handlers/http"
+	productrepo "golang-starter/src/modules/product/repositories"
+	productsvc "golang-starter/src/modules/product/services"
+	userrepo "golang-starter/src/modules/user/repositories"
+	usersvc "golang-starter/src/modules/user/services"
 
 	"github.com/google/wire"
 )

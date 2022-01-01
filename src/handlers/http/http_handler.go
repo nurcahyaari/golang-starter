@@ -1,8 +1,8 @@
 package http
 
 import (
-	productsvc "golang-starter/src/domains/product/services"
-	usersvc "golang-starter/src/domains/user/services"
+	productsvc "golang-starter/src/modules/product/services"
+	usersvc "golang-starter/src/modules/user/services"
 
 	"github.com/go-chi/chi/v5"
 )

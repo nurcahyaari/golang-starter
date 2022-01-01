@@ -6,7 +6,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/jmoiron/sqlx"
-	productsmodel "golang-starter/src/domains/product/entities"
+	productsmodel "golang-starter/src/modules/product/entities"
 	"strings"
 )
 

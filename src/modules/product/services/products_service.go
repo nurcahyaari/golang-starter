@@ -1,6 +1,6 @@
 package services
 
-import "golang-starter/src/domains/product/repositories"
+import "golang-starter/src/modules/product/repositories"
 
 //go:generate go run github.com/sog01/repogen/cmd/repogen -module golang-starter -destination ../ -envFile .env -envPrefix DB -tables products -modelPackage entities -repositoryPackage repositories
 

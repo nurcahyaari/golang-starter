@@ -2,7 +2,7 @@ package repositories
 
 import (
 	localdb "golang-starter/infrastructures/local_db"
-	"golang-starter/src/domains/user/entities"
+	"golang-starter/src/modules/user/entities"
 )
 
 type UserScribleRepository interface {

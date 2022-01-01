@@ -2,7 +2,7 @@ package services
 
 import (
 	"golang-starter/internal/utils/auth"
-	"golang-starter/src/domains/user/repositories"
+	"golang-starter/src/modules/user/repositories"
 )
 
 //go:generate go run github.com/sog01/repogen/cmd/repogen -module golang-starter -destination ../ -envFile .env -envPrefix DB -tables users -modelPackage entities -repositoryPackage repositories

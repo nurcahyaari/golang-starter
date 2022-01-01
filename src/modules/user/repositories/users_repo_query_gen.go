@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jmoiron/sqlx"
-	usersmodel "golang-starter/src/domains/user/entities"
+	usersmodel "golang-starter/src/modules/user/entities"
 	"strings"
 )
 
