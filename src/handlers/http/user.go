@@ -1,35 +1,65 @@
 package http
 
 import (
+	"encoding/json"
+	"fmt"
 	httpresponse "golang-starter/internal/protocols/http/response"
+	"golang-starter/src/modules/user/dto"
 	"net/http"
+	"strconv"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/rs/zerolog/log"
 )
 
-func (h HttpHandlerImpl) Login(w http.ResponseWriter, r *http.Request) {
-	// userData := new(dto.UserRequestLoginBody)
+func (h HttpHandlerImpl) GetdUserById(w http.ResponseWriter, r *http.Request) {
+	rawUserId := chi.URLParam(r, "userId")
+	userId, err := strconv.Atoi(rawUserId)
+	if err != nil {
+		log.Err(err)
+		httpresponse.Err(w, err)
+		return
+	}
 
-	// if err := ctx.BodyParser(userData); err != nil {
-	// 	log.Fatal(err)
-	// }
+	user, err := h.UserService.FindByID(r.Context(), uint(userId))
+	if err != nil {
+		log.Err(err)
+		httpresponse.Err(w, err)
+		return
+	}
 
-	// res, err := h.UserService.Login(userData)
-	// if err != nil {
-	// 	return httpresponse.JsonResponse(ctx, http.StatusUnauthorized, err.Error(), nil)
-	// }
-
-	// return httpresponse.JsonResponse(ctx, http.StatusOK, "", res)
-	httpresponse.Text(w, http.StatusOK, "Success")
+	httpresponse.Json(w, http.StatusOK, "", user)
 }
 
-func (h HttpHandlerImpl) Refresh(w http.ResponseWriter, r *http.Request) {
-	// userID := ctx.Get("userID")
+func (h HttpHandlerImpl) UserLogin(w http.ResponseWriter, r *http.Request) {
+	// userData := new(dto.UserRequestLoginBody)
+	userReq := dto.UserRequestLoginBody{}
+	if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
+		log.Err(err)
+		httpresponse.Err(w, err)
+		return
+	}
 
-	// res, err := h.UserService.RefreshToken(userID)
+	res, err := h.UserService.UserLogin(r.Context(), userReq)
+	if err != nil {
+		log.Err(err)
+		httpresponse.Err(w, err)
+		return
+	}
 
-	// if err != nil {
-	// 	return httpresponse.JsonResponse(ctx, http.StatusUnauthorized, err.Error(), nil)
-	// }
+	httpresponse.Json(w, http.StatusOK, "", res)
+}
 
-	// return httpresponse.JsonResponse(ctx, http.StatusOK, "", res)
-	httpresponse.Text(w, http.StatusOK, "Success")
+func (h HttpHandlerImpl) UserRefreshToken(w http.ResponseWriter, r *http.Request) {
+	userId := r.Header.Get("id")
+	fmt.Println(userId)
+
+	res, err := h.UserService.UserRefreshToken(r.Context(), userId)
+	if err != nil {
+		log.Err(err)
+		httpresponse.Err(w, err)
+		return
+	}
+
+	httpresponse.Json(w, http.StatusOK, "", res)
 }

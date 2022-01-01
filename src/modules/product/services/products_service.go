@@ -1,14 +1,21 @@
 package services
 
-import "golang-starter/src/modules/product/repositories"
+import (
+	"context"
+	"fmt"
+	"golang-starter/src/modules/product/dto"
+	"golang-starter/src/modules/product/repositories"
+
+	"github.com/rs/zerolog/log"
+)
 
 //go:generate go run github.com/sog01/repogen/cmd/repogen -module golang-starter -destination ../ -envFile .env -envPrefix DB -tables products -modelPackage entities -repositoryPackage repositories
 
 type ProductService interface {
-	// GetProducts() []entities.Products
-	// GetProductByProductID(productID int) entities.Products
-	// CreateNewProduct(data dto.ProductsRequestBody) (entities.Products, error)
-	// DeleteProduct(productID int) error
+	GetProducts(ctx context.Context) (dto.ProductsListResponse, error)
+	GetProductByProductID(ctx context.Context, productID int) (dto.ProductsResponse, error)
+	CreateNewProduct(ctx context.Context, data dto.ProductRequestBody) (*dto.ProductsResponse, error)
+	DeleteProduct(ctx context.Context, productID int) error
 }
 
 type ProductServiceImpl struct {
@@ -23,36 +30,48 @@ func NewProductService(
 	}
 }
 
-// func (repo ProductServiceImpl) GetProducts() []entities.Products {
-// 	return repo.ProductRepository.FindAll()
-// }
+func (s ProductServiceImpl) GetProducts(ctx context.Context) (dto.ProductsListResponse, error) {
+	productList, err := s.ProductRepository.GetProductsList(ctx)
+	if err != nil {
+		log.Err(err).Msg("Error fetch productList from DB")
+	}
+	productsResp := dto.CreateProductsListResponse(productList)
+	return productsResp, nil
+}
 
-// func (repo ProductServiceImpl) GetProductByProductID(productID int) entities.Products {
-// 	return repo.ProductRepository.FindByID(uint(productID))
-// }
+func (s ProductServiceImpl) GetProductByProductID(ctx context.Context, productID int) (dto.ProductsResponse, error) {
+	product, err := s.ProductRepository.
+		FilterProducts(
+			repositories.
+				NewProductsFilter("AND").
+				SetFilterByProductId(productID, "="),
+		).
+		GetProducts(ctx)
+	if err != nil {
+		log.Err(err).Msg("Error fetch productList from DB")
+	}
+	productResp := dto.CreateProductsResponse(*product)
+	return productResp, nil
+}
 
-// func (repo ProductServiceImpl) CreateNewProduct(data dto.ProductsRequestBody) (entities.Products, error) {
-// 	product := entities.Products{
-// 		Name:        data.Name,
-// 		Price:       data.Price,
-// 		Description: data.Description,
-// 		Qty:         data.Qty,
-// 	}
+func (s ProductServiceImpl) CreateNewProduct(ctx context.Context, data dto.ProductRequestBody) (*dto.ProductsResponse, error) {
+	product := data.ToProductEntities()
 
-// 	err := repo.ProductRepository.Save(&product)
-// 	if err != nil {
-// 		return entities.Products{}, err
-// 	}
+	a, err := s.ProductRepository.InsertProducts(ctx, product)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(a)
+	return nil, nil
+}
 
-// 	return product, nil
-// }
+func (s ProductServiceImpl) DeleteProduct(ctx context.Context, productID int) error {
+	err := s.ProductRepository.DeleteProducts(ctx, int32(productID))
 
-// func (repo ProductServiceImpl) DeleteProduct(productID int) error {
+	if err != nil {
+		log.Err(err).Msg("Error deleting product")
+		return err
+	}
 
-// 	product := repo.GetProductByProductID(productID)
-// 	if product.ProductID == 0 {
-// 		return sql.ErrNoRows
-// 	}
-
-// 	return repo.ProductRepository.Delete(product)
-// }
+	return nil
+}

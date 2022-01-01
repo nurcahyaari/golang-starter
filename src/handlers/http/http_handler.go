@@ -1,6 +1,7 @@
 package http
 
 import (
+	"golang-starter/internal/protocols/http/middleware"
 	productsvc "golang-starter/src/modules/product/services"
 	usersvc "golang-starter/src/modules/user/services"
 
@@ -24,5 +25,8 @@ func NewHttpHandler(
 
 func (h *HttpHandlerImpl) Router(r *chi.Mux) {
 	r.Get("/products", h.GetProducts)
-	r.Get("/products/{product_id}", h.GetProductByID)
+	r.Get("/products/{productId}", h.GetProductByID)
+	r.Get("/users/{userId}", h.GetdUserById)
+	r.Post("/users/login", h.UserLogin)
+	r.With(middleware.JwtVerifyRefreshToken).Post("/users/refresh", h.UserRefreshToken)
 }

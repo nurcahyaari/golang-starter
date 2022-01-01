@@ -6,7 +6,7 @@ import (
 )
 
 type UserScribleRepository interface {
-	FindUserRefreshToken(userID string) (entities.UserRefreshToken, error)
+	FindUserRefreshToken(userId string) (entities.UserRefreshToken, error)
 }
 
 type UserScribleRepositoryImpl struct {
@@ -19,9 +19,9 @@ func NewUserScribleRepository(scribleDB *localdb.ScribleImpl) *UserScribleReposi
 	}
 }
 
-func (c UserScribleRepositoryImpl) FindUserRefreshToken(userID string) (entities.UserRefreshToken, error) {
+func (c UserScribleRepositoryImpl) FindUserRefreshToken(userId string) (entities.UserRefreshToken, error) {
 	var userRefreshToken entities.UserRefreshToken
-	err := c.scribleDB.DB().Read("refresh_token", userID, &userRefreshToken)
+	err := c.scribleDB.DB().Read("refresh_token", userId, &userRefreshToken)
 	if err != nil {
 		return entities.UserRefreshToken{}, err
 	}

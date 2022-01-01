@@ -30,8 +30,8 @@ type Config struct {
 			Type           string `mapstructure:"TYPE"`
 			Expired        string `mapstructure:"EXPIRED"`
 			RefreshExpired string `mapstructure:"REFRESH_EXPIRED"`
-		}
-	}
+		} `mapstructure:"JWT_TOKEN"`
+	} `mapstructure:"AUTH"`
 
 	DB struct {
 		Mysql struct {

@@ -2,11 +2,11 @@ package response
 
 import (
 	"encoding/json"
+	"golang-starter/internal/protocols/http/errors"
 	"net/http"
 )
 
 type Response struct {
-	Error   *string      `json:"error,omitempty"`
 	Message *string      `json:"message,omitempty"`
 	Data    *interface{} `json:"data,omitempty"`
 }
@@ -29,5 +29,16 @@ func Text(w http.ResponseWriter, httpCode int, message string) {
 
 // TODO: implement response error
 func Err(w http.ResponseWriter, err error) {
+	_, ok := err.(*errors.RespError)
+	if !ok {
+		err = errors.InternalServerError(err.Error())
+	}
 
+	er, _ := err.(*errors.RespError)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(er.Code)
+	res := Response{
+		Message: &er.Message,
+	}
+	json.NewEncoder(w).Encode(res)
 }

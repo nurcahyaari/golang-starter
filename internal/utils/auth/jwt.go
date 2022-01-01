@@ -7,6 +7,7 @@ import (
 
 	"golang-starter/internal/utils/auth/dto"
 	"golang-starter/internal/utils/encryption"
+	"golang-starter/internal/utils/rsa"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -25,8 +26,14 @@ type JwtTokenImpl struct {
 }
 
 func NewJwt(cached *localdb.ScribleImpl) *JwtTokenImpl {
-	jwtTokenDuration, _ := time.ParseDuration(config.Get().Auth.JwtToken.Expired)
-	jwtRefreshDuration, _ := time.ParseDuration(config.Get().Auth.JwtToken.RefreshExpired)
+	jwtTokenDuration, err := time.ParseDuration(config.Get().Auth.JwtToken.Expired)
+	if err != nil {
+		log.Err(err).Msg(config.Get().Auth.JwtToken.Expired)
+	}
+	jwtRefreshDuration, err := time.ParseDuration(config.Get().Auth.JwtToken.RefreshExpired)
+	if err != nil {
+		log.Err(err).Msg(config.Get().Auth.JwtToken.RefreshExpired)
+	}
 	return &JwtTokenImpl{
 		cached:                 cached,
 		jwtTokenTimeExp:        jwtTokenDuration,
@@ -68,7 +75,7 @@ func (o JwtTokenImpl) Sign(claims jwt.MapClaims) dto.Token {
 	}
 
 	authToken.Token = tokenString
-	authToken.Type = config.Get().Auth.JwtToken.Type
+	authToken.Type = "Bearer"
 
 	//create refresh token
 	refreshToken := jwt.New(jwt.SigningMethodHS256)
@@ -95,6 +102,8 @@ func (o JwtTokenImpl) Sign(claims jwt.MapClaims) dto.Token {
 		switch claims["id"].(type) {
 		case int:
 			claims["id"] = fmt.Sprintf("%d", claims["id"].(int))
+		case int32:
+			claims["id"] = fmt.Sprintf("%d", claims["id"].(int32))
 		case float64:
 			claims["id"] = fmt.Sprintf("%d", int(claims["id"].(float64)))
 		default:
@@ -102,7 +111,6 @@ func (o JwtTokenImpl) Sign(claims jwt.MapClaims) dto.Token {
 		o.cached.DB().Write("refresh_token", claims["id"].(string), dto.RefreshToken{RefreshToken: encryptedRefreshToken, Expired: refreshTokenExpired})
 		if err != nil {
 			log.Err(err).Msgf("Failed to save refresh token to scrible")
-			// logger.Log.Infoln("Failed to save refresh token to scrible, with err: ", err)
 		} else {
 			log.Info().Msg("Successfully to save refresh token to scrible")
 		}
@@ -143,16 +151,20 @@ func (o JwtTokenImpl) SignRSA(claims jwt.MapClaims) dto.Token {
 	claims["token_type"] = "access_token"
 
 	token.Claims = claims
-
 	authToken := new(dto.Token)
-	tokenString, err := token.SignedString(config.Get().Application.Key.Rsa.Private)
+	privateRsa, err := rsa.ReadPrivateKeyFromEnv(config.Get().Application.Key.Rsa.Private)
 	if err != nil {
-		log.Err(err)
+		log.Err(err).Msg("err read private key rsa from env")
+		return dto.Token{}
+	}
+	tokenString, err := token.SignedString(privateRsa)
+	if err != nil {
+		log.Err(err).Msg("err read private rsa")
 		return dto.Token{}
 	}
 
 	authToken.Token = tokenString
-	authToken.Type = config.Get().Auth.JwtToken.Type
+	authToken.Type = "Bearer"
 
 	//create refresh token
 	refreshToken := jwt.New(jwt.SigningMethodRS256)
@@ -161,10 +173,9 @@ func (o JwtTokenImpl) SignRSA(claims jwt.MapClaims) dto.Token {
 	claims["exp"] = refreshTokenExpired
 	claims["token_type"] = "refresh_token"
 	refreshToken.Claims = claims
-
-	refreshTokenString, err := refreshToken.SignedString(config.Get().Application.Key.Rsa.Private)
-
+	refreshTokenString, err := refreshToken.SignedString(privateRsa)
 	if err != nil {
+		log.Err(err).Msg("")
 		return dto.Token{}
 	}
 	authToken.RefreshToken = refreshTokenString
@@ -179,6 +190,8 @@ func (o JwtTokenImpl) SignRSA(claims jwt.MapClaims) dto.Token {
 		switch claims["id"].(type) {
 		case int:
 			claims["id"] = fmt.Sprintf("%d", claims["id"].(int))
+		case int32:
+			claims["id"] = fmt.Sprintf("%d", claims["id"].(int32))
 		case float64:
 			claims["id"] = fmt.Sprintf("%d", int(claims["id"].(float64)))
 		default:

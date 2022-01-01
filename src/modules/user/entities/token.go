@@ -1,6 +1,6 @@
 package entities
 
-type UserRefreshToken struct {
+type UserToken struct {
 	RefreshToken string
 	Expired      int64
 }

@@ -1,70 +1,78 @@
 package http
 
 import (
-	"fmt"
+	"encoding/json"
 	httpresponse "golang-starter/internal/protocols/http/response"
+	"golang-starter/src/modules/product/dto"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/rs/zerolog/log"
 )
 
 func (h HttpHandlerImpl) GetProducts(w http.ResponseWriter, r *http.Request) {
 	// get all products
-	// products := h.ProductService.GetProducts()
-
-	// productsResponse := dto.ParseFromEntities(products)
-
-	// return httpresponse.JsonResponse(ctx, http.StatusOK, "", productsResponse)
-	httpresponse.Text(w, http.StatusOK, "OK")
-}
-
-func (h HttpHandlerImpl) GetProductByID(w http.ResponseWriter, r *http.Request) {
-	rawProduct_id := chi.URLParam(r, "product_id")
-	product_id, err := strconv.Atoi(rawProduct_id)
+	products, err := h.ProductService.GetProducts(r.Context())
 	if err != nil {
-		httpresponse.Json(w, http.StatusBadRequest, err.Error(), nil)
+		httpresponse.Err(w, err)
 		return
 	}
 
-	// product := h.ProductService.GetProductByProductID(product_id)
+	httpresponse.Json(w, http.StatusOK, "", products)
+}
 
-	// productResponse := dto.ParseFromEntity(product)
+func (h HttpHandlerImpl) GetProductByID(w http.ResponseWriter, r *http.Request) {
+	rawProductId := chi.URLParam(r, "productId")
+	productId, err := strconv.Atoi(rawProductId)
+	if err != nil {
+		httpresponse.Err(w, err)
+		return
+	}
 
-	// return httpresponse.JsonResponse(ctx, http.StatusOK, "", productResponse)
-	httpresponse.Text(w, http.StatusOK, fmt.Sprintf("%d", product_id))
+	product, err := h.ProductService.GetProductByProductID(r.Context(), productId)
+	if err != nil {
+		httpresponse.Err(w, err)
+		return
+	}
+
+	httpresponse.Json(w, http.StatusOK, "", product)
 }
 
 func (h HttpHandlerImpl) DeleteProductByID(w http.ResponseWriter, r *http.Request) {
-	// rawProduct_id := ctx.Params("product_id")
-	// product_id, err := strconv.Atoi(rawProduct_id)
-	// if err != nil {
-	// 	return httpresponse.JsonResponse(ctx, http.StatusBadRequest, err.Error(), nil)
-	// }
+	rawProductId := chi.URLParam(r, "productId")
+	productId, err := strconv.Atoi(rawProductId)
+	if err != nil {
+		log.Err(err)
+		httpresponse.Err(w, err)
+		return
+	}
 
-	// err = h.ProductService.DeleteProduct(product_id)
-	// if err != nil {
-	// 	return httpresponse.JsonResponse(ctx, http.StatusBadRequest, err.Error(), nil)
-	// }
+	err = h.ProductService.DeleteProduct(r.Context(), productId)
+	if err != nil {
+		httpresponse.Err(w, err)
+		return
+	}
 
-	// return httpresponse.JsonResponse(ctx, http.StatusOK, "success to delete product", nil)
-	httpresponse.Text(w, http.StatusOK, "Success")
+	httpresponse.Json(w, http.StatusOK, "success to delete product", nil)
 }
 
 func (h HttpHandlerImpl) CreateNewProduct(w http.ResponseWriter, r *http.Request) {
 	// productRequestBody := new(dto.ProductsRequestBody)
-	// if err := ctx.BodyParser(productRequestBody); err != nil {
-	// 	return httpresponse.JsonResponse(ctx, http.StatusBadRequest, err.Error(), nil)
-	// }
+	product := dto.ProductRequestBody{}
+	err := json.NewDecoder(r.Body).Decode(&product)
+	if err != nil {
+		log.Err(err)
+		httpresponse.Err(w, err)
+		return
+	}
 
-	// product, err := h.ProductService.CreateNewProduct(*productRequestBody)
-	// if err != nil {
-	// 	// logger.Log.Errorln(err)
-	// 	return httpresponse.JsonResponse(ctx, http.StatusBadRequest, err.Error(), nil)
-	// }
+	productNew, err := h.ProductService.CreateNewProduct(r.Context(), product)
+	if err != nil {
+		log.Err(err)
+		httpresponse.Err(w, err)
+		return
+	}
 
-	// productResponse := dto.ParseFromEntity(product)
-
-	// return httpresponse.JsonResponse(ctx, http.StatusOK, "", productResponse)
-	httpresponse.Text(w, http.StatusOK, "Success")
+	httpresponse.Json(w, http.StatusOK, "success create product", productNew)
 }

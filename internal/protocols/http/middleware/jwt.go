@@ -1,5 +1,20 @@
 package middleware
 
+import (
+	"fmt"
+	"golang-starter/config"
+	"net/http"
+	"strings"
+	"time"
+
+	httpresponse "golang-starter/internal/protocols/http/response"
+	"golang-starter/internal/utils/rsa"
+
+	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/request"
+	"github.com/rs/zerolog/log"
+)
+
 /*
 ** Package for handling Auth Middleware using JWT
 **
@@ -7,191 +22,109 @@ package middleware
 **
 **
  */
-// func JwtVerifyTokenRSA(ctx *fiber.Ctx) error {
-// 	JwtToken := strings.Replace(ctx.Get("Authorization"), fmt.Sprintf("%s ", config.Get().JwtTokenType), "", 1)
+// JwtVerifyToken usefull for middleware for verify the jwt token from the Authorization
+// this function will serve to middleware and usefull for the idiomatic framework like gorm or chi or just net/http
+func JwtVerifyToken(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		JwtToken := strings.Replace(r.Header.Get("Authorization"), fmt.Sprintf("%s ", "Bearer"), "", 1)
 
-// 	if JwtToken == "" {
-// 		res := web.Response{
-// 			Code:    401,
-// 			Message: "Unauthorized",
-// 		}
-// 		return web.JsonResponse(ctx, res.Code, res.Message, nil)
-// 	}
+		if JwtToken == "" {
+			httpresponse.Json(w, http.StatusUnauthorized, "", "token is empty")
+			return
+		}
 
-// 	req := new(http.Request)
-// 	req.Header = http.Header{}
-// 	req.Header.Set("Authorization", JwtToken)
+		token, err := request.ParseFromRequest(r, request.OAuth2Extractor, func(token *jwt.Token) (interface{}, error) {
+			tokenType := token.Claims.(jwt.MapClaims)["token_type"]
 
-// 	token, err := request.ParseFromRequest(req, request.OAuth2Extractor, func(token *jwt.Token) (interface{}, error) {
-// 		tokenType := token.Claims.(jwt.MapClaims)["token_type"]
+			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			} else if tokenType != "access_token" {
+				return nil, fmt.Errorf("unexpected token type: %v", tokenType)
+			} else {
+				publicRsa, err := rsa.ReadPublicKeyFromEnv(config.Get().Application.Key.Rsa.Public)
+				if err != nil {
+					log.Err(err).Msg("err read private key rsa from env")
+					return nil, nil
+				}
+				return publicRsa, nil
+			}
+		})
 
-// 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-// 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-// 		} else if tokenType != "access_token" {
-// 			return nil, fmt.Errorf("unexpected token type: %v", tokenType)
-// 		} else {
-// 			return config.Get().PublicKey, nil
-// 		}
-// 	})
+		if err != nil || !token.Valid {
+			log.Err(err)
+			httpresponse.Json(w, http.StatusUnauthorized, "", "Token is not valid")
+			return
+		}
 
-// 	if err != nil || !token.Valid {
-// 		res := web.Response{
-// 			Code:    401,
-// 			Message: err.Error(),
-// 		}
-// 		return web.JsonResponse(ctx, res.Code, res.Message, nil)
-// 	}
+		rawId := token.Claims.(jwt.MapClaims)["id"].(float64)
+		id := fmt.Sprintf("%d", int(rawId))
+		if id == "" {
+			httpresponse.Json(w, http.StatusUnauthorized, "", "Token not Found")
+			return
+		}
 
-// 	return ctx.Next()
-// }
+		rawExp := token.Claims.(jwt.MapClaims)["exp"].(float64)
+		exp := int64(rawExp)
+		if exp < time.Now().Unix() {
+			httpresponse.Json(w, http.StatusUnauthorized, "", "Token has expired")
+			return
+		}
 
-// func JwtVerifyRefreshRSA(ctx *fiber.Ctx) error {
-// 	JwtToken := strings.Replace(ctx.Get("Authorization"), fmt.Sprintf("%s ", config.Get().JwtTokenType), "", 1)
+		r.Header.Set("id", id)
 
-// 	if JwtToken == "" {
-// 		res := web.Response{
-// 			Code:    401,
-// 			Message: "Unauthorized",
-// 		}
-// 		return web.JsonResponse(ctx, res.Code, res.Message, nil)
-// 	}
-// 	req := new(http.Request)
-// 	req.Header = http.Header{}
-// 	req.Header.Set("Authorization", JwtToken)
+		next.ServeHTTP(w, r)
+	})
+}
 
-// 	token, err := request.ParseFromRequest(req, request.OAuth2Extractor, func(token *jwt.Token) (interface{}, error) {
-// 		tokenType := token.Claims.(jwt.MapClaims)["token_type"]
+// JwtVerifyRefreshToken usefull for middleware for verify the jwt refresh token from the Authorization
+// this function will serve to middleware and usefull for the idiomatic framework like gorm or chi or just net/http
+func JwtVerifyRefreshToken(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		JwtToken := strings.Replace(r.Header.Get("Authorization"), fmt.Sprintf("%s ", "Bearer"), "", 1)
 
-// 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-// 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-// 		} else if tokenType != "refresh_token" {
-// 			return nil, fmt.Errorf("unexpected token type: %v", tokenType)
-// 		} else {
-// 			return config.Get().PublicKey, nil
-// 		}
-// 	})
+		if JwtToken == "" {
+			httpresponse.Json(w, http.StatusUnauthorized, "", "Refresh token is empty")
+			return
+		}
 
-// 	if err != nil || !token.Valid {
-// 		res := web.Response{
-// 			Code:    401,
-// 			Message: err.Error(),
-// 		}
-// 		return web.JsonResponse(ctx, res.Code, res.Message, nil)
-// 	}
+		token, err := request.ParseFromRequest(r, request.OAuth2Extractor, func(token *jwt.Token) (interface{}, error) {
+			tokenType := token.Claims.(jwt.MapClaims)["token_type"]
+			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			} else if tokenType != "refresh_token" {
+				return nil, fmt.Errorf("unexpected token type: %v", tokenType)
+			} else {
+				privateRsa, err := rsa.ReadPublicKeyFromEnv(config.Get().Application.Key.Rsa.Public)
+				if err != nil {
+					log.Err(err).Msg("err read private key rsa from env")
+					return nil, nil
+				}
+				return privateRsa, nil
+			}
+		})
 
-// 	userID := token.Claims.(jwt.MapClaims)["id"].(string)
+		if err != nil || !token.Valid {
+			log.Err(err).Msg("")
+			httpresponse.Json(w, http.StatusUnauthorized, "", "Refresh token is not valid")
+			return
+		}
 
-// 	if userID == "" {
-// 		res := web.Response{
-// 			Code:    401,
-// 			Message: "Token not found",
-// 		}
-// 		return web.JsonResponse(ctx, res.Code, res.Message, nil)
-// 	}
-// 	rawExp := token.Claims.(jwt.MapClaims)["exp"].(float64)
-// 	exp := int64(rawExp)
+		rawId := token.Claims.(jwt.MapClaims)["id"].(float64)
+		id := fmt.Sprintf("%d", int(rawId))
+		if id == "" {
+			httpresponse.Json(w, http.StatusUnauthorized, "", "Refresh token not Found")
+			return
+		}
 
-// 	if exp < time.Now().Unix() {
-// 		res := web.Response{
-// 			Code:    401,
-// 			Message: "Refresh Token was expired",
-// 		}
-// 		return web.JsonResponse(ctx, res.Code, res.Message, nil)
-// 	}
+		rawExp := token.Claims.(jwt.MapClaims)["exp"].(float64)
+		exp := int64(rawExp)
+		if exp < time.Now().Unix() {
+			httpresponse.Json(w, http.StatusUnauthorized, "", "Refresh token has expired")
+			return
+		}
 
-// 	ctx.Context().Request.Header.Set("userID", userID)
-// 	return ctx.Next()
-// }
+		r.Header.Set("id", id)
 
-// func JwtVerifyToken(ctx *fiber.Ctx) error {
-// 	jwtToken := strings.Replace(ctx.Get("Authorization"), fmt.Sprintf("%s ", config.Get().JwtTokenType), "", 1)
-
-// 	if jwtToken == "" {
-// 		res := web.Response{
-// 			Code:    401,
-// 			Message: "Unauthorized",
-// 		}
-// 		return web.JsonResponse(ctx, res.Code, res.Message, nil)
-// 	}
-
-// 	req := new(http.Request)
-// 	req.Header = http.Header{}
-// 	req.Header.Set("Authorization", jwtToken)
-
-// 	token, err := jwt.Parse(jwtToken, func(t *jwt.Token) (interface{}, error) {
-// 		tokenType := t.Claims.(jwt.MapClaims)["token_type"]
-
-// 		if tokenType != "access_token" {
-// 			return nil, fmt.Errorf("unexpected token type: %v", tokenType)
-// 		}
-// 		return []byte(config.Get().AppKey), nil
-// 	})
-
-// 	if err != nil || !token.Valid {
-// 		res := web.Response{
-// 			Code:    401,
-// 			Message: err.Error(),
-// 		}
-// 		return web.JsonResponse(ctx, res.Code, res.Message, nil)
-// 	}
-
-// 	return ctx.Next()
-// }
-
-// func JwtVerifyRefresh(ctx *fiber.Ctx) error {
-// 	jwtToken := strings.Replace(ctx.Get("Authorization"), fmt.Sprintf("%s ", config.Get().JwtTokenType), "", 1)
-
-// 	if jwtToken == "" {
-// 		res := web.Response{
-// 			Code:    401,
-// 			Message: "Unauthorized",
-// 		}
-// 		return web.JsonResponse(ctx, res.Code, res.Message, nil)
-// 	}
-
-// 	req := new(http.Request)
-// 	req.Header = http.Header{}
-// 	req.Header.Set("Authorization", jwtToken)
-
-// 	token, err := jwt.Parse(jwtToken, func(t *jwt.Token) (interface{}, error) {
-// 		tokenType := t.Claims.(jwt.MapClaims)["token_type"]
-// 		fmt.Println(tokenType != "refresh_token")
-// 		if tokenType != "refresh_token" {
-// 			return nil, fmt.Errorf("unexpected token type: %v", tokenType)
-// 		}
-// 		return []byte(config.Get().AppKey), nil
-// 	})
-
-// 	if err != nil || !token.Valid {
-// 		res := web.Response{
-// 			Code:    401,
-// 			Message: err.Error(),
-// 		}
-// 		return web.JsonResponse(ctx, res.Code, res.Message, nil)
-// 	}
-
-// 	rawUserID := token.Claims.(jwt.MapClaims)["id"].(float64)
-
-// 	if rawUserID == 0 {
-// 		res := web.Response{
-// 			Code:    401,
-// 			Message: "Token not found",
-// 		}
-// 		return web.JsonResponse(ctx, res.Code, res.Message, nil)
-// 	}
-// 	rawExp := token.Claims.(jwt.MapClaims)["exp"].(float64)
-// 	exp := int64(rawExp)
-
-// 	if exp < time.Now().Unix() {
-// 		res := web.Response{
-// 			Code:    401,
-// 			Message: "Refresh Token was expired",
-// 		}
-// 		return web.JsonResponse(ctx, res.Code, res.Message, nil)
-// 	}
-
-// 	userID := strconv.Itoa(int(rawUserID))
-// 	ctx.Context().Request.Header.Set("userID", userID)
-
-// 	return ctx.Next()
-// }
+		next.ServeHTTP(w, r)
+	})
+}

@@ -1,16 +1,24 @@
 package services
 
 import (
+	"context"
+	"golang-starter/internal/protocols/http/errors"
 	"golang-starter/internal/utils/auth"
+	"golang-starter/src/modules/user/dto"
 	"golang-starter/src/modules/user/repositories"
+	"time"
+
+	"github.com/golang-jwt/jwt"
+	"github.com/rs/zerolog/log"
+	"golang.org/x/crypto/bcrypt"
 )
 
 //go:generate go run github.com/sog01/repogen/cmd/repogen -module golang-starter -destination ../ -envFile .env -envPrefix DB -tables users -modelPackage entities -repositoryPackage repositories
 
 type UserService interface {
-	// FindByID(id uint) entities.Users
-	// Login(data *dto.UserRequestLoginBody) (dto.UserTokenResponseBody, error)
-	// RefreshToken(userID string) (dto.UserTokenResponseBody, error)
+	FindByID(ctx context.Context, id uint) (*dto.UserRespBody, error)
+	UserLogin(ctx context.Context, req dto.UserRequestLoginBody) (*dto.UserTokenRespBody, error)
+	UserRefreshToken(ctx context.Context, userId string) (*dto.UserTokenRespBody, error)
 }
 
 type UserServiceImpl struct {
@@ -29,46 +37,59 @@ func NewUserService(
 	}
 }
 
-// func (c UserServiceImpl) FindByID(id uint) entities.Users {
-// 	return c.userMysqlRepository.FindByID(id)
-// }
+func (s UserServiceImpl) FindByID(ctx context.Context, userId uint) (*dto.UserRespBody, error) {
+	user, err := s.userRepository.
+		FilterUsers(repositories.NewUsersFilter("AND").SetFilterByUserId(userId, "=")).
+		GetUsers(ctx)
 
-// func (c UserServiceImpl) Login(data *dto.UserRequestLoginBody) (dto.UserTokenResponseBody, error) {
+	if err != nil {
+		log.Err(err).Msg("error fetch user data")
+		return nil, errors.FindErrorType(err)
+	}
 
-// 	user := c.userMysqlRepository.FindByEmail(data.Email)
-// 	if user.UserID == 0 {
-// 		return dto.UserTokenResponseBody{}, sql.ErrNoRows
-// 	}
-// 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.Password))
+	userResp := dto.CreateUserResp(*user)
 
-// 	if err != nil {
-// 		return dto.UserTokenResponseBody{}, err
-// 	}
+	return &userResp, nil
+}
 
-// 	userToken := c.jwtAuth.Sign(jwt.MapClaims{
-// 		"id": user.UserID,
-// 	})
+func (s UserServiceImpl) UserLogin(ctx context.Context, req dto.UserRequestLoginBody) (*dto.UserTokenRespBody, error) {
 
-// 	token := dto.UserTokenResponseBody(userToken)
+	user, err := s.userRepository.
+		FilterUsers(repositories.NewUsersFilter("AND").SetFilterByEmail(req.Email, "=")).
+		GetUsers(ctx)
+	if err != nil {
+		log.Err(err).Msg("error fetch user data")
+		return nil, errors.FindErrorType(err)
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
+	if err != nil {
+		return nil, errors.Unauthorization("email and password didn't match")
+	}
 
-// 	return token, nil
-// }
+	userToken := s.jwtAuth.SignRSA(jwt.MapClaims{
+		"id": user.UserId,
+	})
 
-// func (c UserServiceImpl) RefreshToken(userID string) (dto.UserTokenResponseBody, error) {
-// 	refreshToken, err := c.userScribleRepository.FindUserRefreshToken(userID)
-// 	if err != nil {
-// 		return dto.UserTokenResponseBody{}, err
-// 	}
+	token := dto.UserTokenRespBody(userToken)
 
-// 	if refreshToken.Expired < time.Now().Unix() {
-// 		return dto.UserTokenResponseBody{}, err
-// 	}
+	return &token, nil
+}
 
-// 	userToken := c.jwtAuth.Sign(jwt.MapClaims{
-// 		"id": userID,
-// 	})
+func (s UserServiceImpl) UserRefreshToken(ctx context.Context, userId string) (*dto.UserTokenRespBody, error) {
+	refreshToken, err := s.userRepository.FindUserRefreshToken(userId)
+	if err != nil {
+		return nil, errors.Unauthorization("token is not valid")
+	}
 
-// 	token := dto.UserTokenResponseBody(userToken)
+	if refreshToken.Expired < time.Now().Unix() {
+		return nil, errors.Unauthorization("token is expired")
+	}
 
-// 	return token, nil
-// }
+	userToken := s.jwtAuth.SignRSA(jwt.MapClaims{
+		"id": userId,
+	})
+
+	token := dto.UserTokenRespBody(userToken)
+
+	return &token, nil
+}
