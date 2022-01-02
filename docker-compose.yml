@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: golang-stater
+    restart: always
+    links:
+      - mysql
+    depends_on:
+      - mysql
+    ports:
+      - 3003:3003
+    networks:
+      services-network:
+        aliases:
+         - web
+
+  mysql:
+    image: mysql
+    container_name: mysql_golang_stater
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: golang-stater
+    ports:
+      - "3307:3306"
+    networks:
+      services-network:
+        aliases:
+         - web
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: pma_golang_stater
+    links:
+      - mysql
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    restart: always
+    ports:
+      - 8081:80
+    networks:
+      services-network:
+        aliases:
+         - web
+
+networks:
+   services-network:
+     name: services-network
+     driver: bridge

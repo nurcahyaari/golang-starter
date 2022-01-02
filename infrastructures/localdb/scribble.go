@@ -6,25 +6,21 @@ import (
 	scribble "github.com/nanobox-io/golang-scribble"
 )
 
-type ScribleDB interface {
-	DB() *scribble.Driver
-}
-
-type scribleDB struct {
+type ScribleImpl struct {
 	db *scribble.Driver
 }
 
-func NewScribleClient() ScribleDB {
-	db, err := scribble.New("temp/db", nil)
+func NewScribleClient() *ScribleImpl {
+	db, err := scribble.New("tmp/db", nil)
 	if err != nil {
 		log.Println("Error", err)
 	}
 
-	return &scribleDB{
+	return &ScribleImpl{
 		db: db,
 	}
 }
 
-func (db *scribleDB) DB() *scribble.Driver {
+func (db ScribleImpl) DB() *scribble.Driver {
 	return db.db
 }

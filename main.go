@@ -1,37 +1,17 @@
 package main
 
 import (
-	"fmt"
-	"golang-starter/config"
-	"golang-starter/infrastructures/db"
-	"golang-starter/infrastructures/localdb"
-	"golang-starter/internal/routes"
-	"golang-starter/internal/web"
-	"log"
-
-	"github.com/gofiber/fiber/v2"
+	"golang-starter/internal/logger"
 )
+
+//go:generate go run github.com/google/wire/cmd/wire
+//go:generate go run github.com/swaggo/swag/cmd/swag init
 
 func main() {
 	// you didn't define port in env file
 	// the default port is random from fiber
+	// init log
+	logger.InitLogger()
 
-	appPort := config.Get().AppPort
-	log.Println("Server running on PORT", appPort)
-	app := fiber.New()
-
-	mysqlDB := db.NewMysqlClient()
-	scribleDB := localdb.NewScribleClient()
-
-	routeStruct := routes.RouterStruct{
-		RouterStruct: web.RouterStruct{
-			Web:       app,
-			MysqlDB:   mysqlDB,
-			ScribleDB: scribleDB,
-		},
-	}
-	router := routes.NewHttpRoute(routeStruct)
-	router.GetRoutes()
-
-	app.Listen(fmt.Sprintf(":%s", appPort))
+	InitHttpProtocol().Listen()
 }
