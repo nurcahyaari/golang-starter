@@ -11,6 +11,15 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// GetProducts return Products list
+// @Summary Get all products
+// @Description get all products
+// @Tags Products
+// @Success 200 {object} response.Response
+// @Failure 404 {object} response.Response
+// @Failure 401 {object} response.Response
+// @Failure 500 {object} response.Response
+// @Router /products [GET]
 func (h HttpHandlerImpl) GetProducts(w http.ResponseWriter, r *http.Request) {
 	// get all products
 	products, err := h.ProductService.GetProducts(r.Context())
@@ -22,6 +31,16 @@ func (h HttpHandlerImpl) GetProducts(w http.ResponseWriter, r *http.Request) {
 	httpresponse.Json(w, http.StatusOK, "", products)
 }
 
+// GetProductByID return Products by productId
+// @Summary Get Products by productId
+// @Description get Products by productId
+// @Tags Products
+// @Param productId path string true "productId"
+// @Success 200 {object} response.Response
+// @Failure 404 {object} response.Response
+// @Failure 401 {object} response.Response
+// @Failure 500 {object} response.Response
+// @Router /products/{productId} [GET]
 func (h HttpHandlerImpl) GetProductByID(w http.ResponseWriter, r *http.Request) {
 	rawProductId := chi.URLParam(r, "productId")
 	productId, err := strconv.Atoi(rawProductId)

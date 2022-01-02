@@ -12,7 +12,17 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (h HttpHandlerImpl) GetdUserById(w http.ResponseWriter, r *http.Request) {
+// GetUserById return User by userId
+// @Summary Get User by userId
+// @Description get User by userId
+// @Tags Users
+// @Param userId path string true "userId"
+// @Success 200 {object} response.Response
+// @Failure 404 {object} response.Response
+// @Failure 401 {object} response.Response
+// @Failure 500 {object} response.Response
+// @Router /users/{userId} [GET]
+func (h HttpHandlerImpl) GetUserById(w http.ResponseWriter, r *http.Request) {
 	rawUserId := chi.URLParam(r, "userId")
 	userId, err := strconv.Atoi(rawUserId)
 	if err != nil {
@@ -31,6 +41,16 @@ func (h HttpHandlerImpl) GetdUserById(w http.ResponseWriter, r *http.Request) {
 	httpresponse.Json(w, http.StatusOK, "", user)
 }
 
+// UserLogin login user to get token
+// @Summary login user to get token
+// @Description login user to get token
+// @Tags Users
+// @Param User Form body dto.UserRequestLoginBody true "user form"
+// @Success 200 {object} response.Response
+// @Failure 404 {object} response.Response
+// @Failure 401 {object} response.Response
+// @Failure 500 {object} response.Response
+// @Router /users/login [POST]
 func (h HttpHandlerImpl) UserLogin(w http.ResponseWriter, r *http.Request) {
 	// userData := new(dto.UserRequestLoginBody)
 	userReq := dto.UserRequestLoginBody{}
@@ -50,6 +70,16 @@ func (h HttpHandlerImpl) UserLogin(w http.ResponseWriter, r *http.Request) {
 	httpresponse.Json(w, http.StatusOK, "", res)
 }
 
+// UserRefreshToken get new token by refresh token
+// @Summary get new token by refresh token
+// @Description get new token by refresh token
+// @Tags Users
+// @Param Authorization header string true "refresh token"
+// @Success 200 {object} response.Response
+// @Failure 404 {object} response.Response
+// @Failure 401 {object} response.Response
+// @Failure 500 {object} response.Response
+// @Router /users/refresh [POST]
 func (h HttpHandlerImpl) UserRefreshToken(w http.ResponseWriter, r *http.Request) {
 	userId := r.Header.Get("id")
 	fmt.Println(userId)
