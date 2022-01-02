@@ -3,45 +3,50 @@ package auth
 import (
 	"fmt"
 	"golang-starter/config"
-	"golang-starter/infrastructures/local_db"
-	"golang-starter/infrastructures/logger"
+	localdb "golang-starter/infrastructures/local_db"
 
+	"golang-starter/internal/utils/auth/dto"
 	"golang-starter/internal/utils/encryption"
+	"golang-starter/internal/utils/rsa"
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/rs/zerolog/log"
 )
 
-type TokenStruct struct {
-	Type         string `json:"type"`
-	Token        string `json:"token"`
-	RefreshToken string `json:"refresh_token"`
+type JwtToken interface {
+	Sign(claims jwt.MapClaims) dto.Token
+	SignRSA(claims jwt.MapClaims) dto.Token
 }
 
-type RefreshTokenStruct struct {
-	RefreshToken string `json:"refresh_token"`
-	Expired      int64  `json:"expired"`
+type JwtTokenImpl struct {
+	jwtTokenTimeExp        time.Duration
+	jwtRefreshTokenTimeExp time.Duration
+	cached                 *localdb.ScribleImpl
 }
 
-type JwtTokenInterface interface {
-	Sign(claims jwt.MapClaims) TokenStruct
-	SignRSA(claims jwt.MapClaims) TokenStruct
+func NewJwt(cached *localdb.ScribleImpl) *JwtTokenImpl {
+	jwtTokenDuration, err := time.ParseDuration(config.Get().Auth.JwtToken.Expired)
+	if err != nil {
+		log.Err(err).Msg(config.Get().Auth.JwtToken.Expired)
+	}
+	jwtRefreshDuration, err := time.ParseDuration(config.Get().Auth.JwtToken.RefreshExpired)
+	if err != nil {
+		log.Err(err).Msg(config.Get().Auth.JwtToken.RefreshExpired)
+	}
+	return &JwtTokenImpl{
+		cached:                 cached,
+		jwtTokenTimeExp:        jwtTokenDuration,
+		jwtRefreshTokenTimeExp: jwtRefreshDuration,
+	}
 }
 
-type jwtToken struct {
-	cached local_db.ScribleDB
-}
-
-func NewJwt(cached local_db.ScribleDB) JwtTokenInterface {
-	return &jwtToken{cached: cached}
-}
-
-func (o jwtToken) Sign(claims jwt.MapClaims) TokenStruct {
+func (o JwtTokenImpl) Sign(claims jwt.MapClaims) dto.Token {
 	timeNow := time.Now()
-	tokenExpired := timeNow.Add(config.Get().JwtTokenExpired).Unix()
+	tokenExpired := timeNow.Add(o.jwtTokenTimeExp).Unix()
 
 	if claims["id"] == nil {
-		return TokenStruct{}
+		return dto.Token{}
 	}
 
 	token := jwt.New(jwt.SigningMethodHS256)
@@ -61,56 +66,58 @@ func (o jwtToken) Sign(claims jwt.MapClaims) TokenStruct {
 
 	token.Claims = claims
 
-	authToken := new(TokenStruct)
-	tokenString, err := token.SignedString([]byte(config.Get().AppKey))
+	authToken := new(dto.Token)
+	tokenString, err := token.SignedString([]byte(config.Get().Application.Key.Default))
 
 	if err != nil {
-		logger.Log.Errorln(err)
-		return TokenStruct{}
+		log.Err(err)
+		return dto.Token{}
 	}
 
 	authToken.Token = tokenString
-	authToken.Type = config.Get().JwtTokenType
+	authToken.Type = "Bearer"
 
 	//create refresh token
 	refreshToken := jwt.New(jwt.SigningMethodHS256)
-	refreshTokenExpired := timeNow.Add(config.Get().JwtRefreshExpired).Unix()
+	refreshTokenExpired := timeNow.Add(o.jwtRefreshTokenTimeExp).Unix()
 
 	claims["exp"] = refreshTokenExpired
 	claims["token_type"] = "refresh_token"
 	refreshToken.Claims = claims
 
-	refreshTokenString, err := refreshToken.SignedString([]byte(config.Get().AppKey))
+	refreshTokenString, err := refreshToken.SignedString([]byte(config.Get().Application.Key.Default))
 
 	if err != nil {
-		return TokenStruct{}
+		return dto.Token{}
 	}
 	authToken.RefreshToken = refreshTokenString
 
 	//save token to redis db
 	go func() {
-		encryptedRefreshToken, err := encryption.AesCFBEncryption(refreshTokenString, config.Get().AppKey)
+		encryptedRefreshToken, err := encryption.AesCFBEncryption(refreshTokenString, config.Get().Application.Key.Default)
 		if err != nil {
-			logger.Log.Errorln(err)
+			log.Err(err)
 		}
 		// check data type of the claims
 		switch claims["id"].(type) {
 		case int:
 			claims["id"] = fmt.Sprintf("%d", claims["id"].(int))
+		case int32:
+			claims["id"] = fmt.Sprintf("%d", claims["id"].(int32))
 		case float64:
 			claims["id"] = fmt.Sprintf("%d", int(claims["id"].(float64)))
 		default:
 		}
-		o.cached.DB().Write("refresh_token", claims["id"].(string), RefreshTokenStruct{RefreshToken: encryptedRefreshToken, Expired: refreshTokenExpired})
+		o.cached.DB().Write("refresh_token", claims["id"].(string), dto.RefreshToken{RefreshToken: encryptedRefreshToken, Expired: refreshTokenExpired})
 		if err != nil {
-			logger.Log.Infoln("Failed to save refresh token to scrible, with err: ", err)
+			log.Err(err).Msgf("Failed to save refresh token to scrible")
 		} else {
-			logger.Log.Infoln("Successfully to save refresh token to scrible")
+			log.Info().Msg("Successfully to save refresh token to scrible")
 		}
 	}()
 
-	return TokenStruct{
-		Type:         "Bearer",
+	return dto.Token{
+		Type:         config.Get().Auth.JwtToken.Type,
 		Token:        authToken.Token,
 		RefreshToken: authToken.RefreshToken,
 	}
@@ -120,12 +127,12 @@ func (o jwtToken) Sign(claims jwt.MapClaims) TokenStruct {
 // it has ... parameter
 // userdata is map data, it's using for passing user data
 // default expired time is 60 second
-func (o jwtToken) SignRSA(claims jwt.MapClaims) TokenStruct {
+func (o JwtTokenImpl) SignRSA(claims jwt.MapClaims) dto.Token {
 	timeNow := time.Now()
-	tokenExpired := timeNow.Add(config.Get().JwtTokenExpired).Unix()
+	tokenExpired := timeNow.Add(o.jwtTokenTimeExp).Unix()
 
 	if claims["id"] == nil {
-		return TokenStruct{}
+		return dto.Token{}
 	}
 
 	token := jwt.New(jwt.SigningMethodRS256)
@@ -144,55 +151,60 @@ func (o jwtToken) SignRSA(claims jwt.MapClaims) TokenStruct {
 	claims["token_type"] = "access_token"
 
 	token.Claims = claims
-
-	authToken := new(TokenStruct)
-	tokenString, err := token.SignedString(config.Get().PrivateKey)
+	authToken := new(dto.Token)
+	privateRsa, err := rsa.ReadPrivateKeyFromEnv(config.Get().Application.Key.Rsa.Private)
 	if err != nil {
-		logger.Log.Errorln(err)
-		return TokenStruct{}
+		log.Err(err).Msg("err read private key rsa from env")
+		return dto.Token{}
+	}
+	tokenString, err := token.SignedString(privateRsa)
+	if err != nil {
+		log.Err(err).Msg("err read private rsa")
+		return dto.Token{}
 	}
 
 	authToken.Token = tokenString
-	authToken.Type = config.Get().JwtTokenType
+	authToken.Type = "Bearer"
 
 	//create refresh token
 	refreshToken := jwt.New(jwt.SigningMethodRS256)
-	refreshTokenExpired := timeNow.Add(config.Get().JwtRefreshExpired).Unix()
+	refreshTokenExpired := timeNow.Add(o.jwtRefreshTokenTimeExp).Unix()
 
 	claims["exp"] = refreshTokenExpired
 	claims["token_type"] = "refresh_token"
 	refreshToken.Claims = claims
-
-	refreshTokenString, err := refreshToken.SignedString(config.Get().PrivateKey)
-
+	refreshTokenString, err := refreshToken.SignedString(privateRsa)
 	if err != nil {
-		return TokenStruct{}
+		log.Err(err).Msg("")
+		return dto.Token{}
 	}
 	authToken.RefreshToken = refreshTokenString
 
 	//save token to redis db
 	go func() {
-		encryptedRefreshToken, err := encryption.AesCFBEncryption(refreshTokenString, config.Get().AppKey)
+		encryptedRefreshToken, err := encryption.AesCFBEncryption(refreshTokenString, config.Get().Application.Key.Default)
 		if err != nil {
-			logger.Log.Errorln(err)
+			log.Err(err)
 		}
 		// check data type of the claims
 		switch claims["id"].(type) {
 		case int:
 			claims["id"] = fmt.Sprintf("%d", claims["id"].(int))
+		case int32:
+			claims["id"] = fmt.Sprintf("%d", claims["id"].(int32))
 		case float64:
 			claims["id"] = fmt.Sprintf("%d", int(claims["id"].(float64)))
 		default:
 		}
-		o.cached.DB().Write("refresh_token", claims["id"].(string), RefreshTokenStruct{RefreshToken: encryptedRefreshToken, Expired: refreshTokenExpired})
+		o.cached.DB().Write("refresh_token", claims["id"].(string), dto.RefreshToken{RefreshToken: encryptedRefreshToken, Expired: refreshTokenExpired})
 		if err != nil {
-			logger.Log.Infoln("Failed to save refresh token to redis, with err: ", err)
+			log.Err(err).Msg("Failed to save refresh token to redis")
 		} else {
-			logger.Log.Infoln("Successfully to save refresh token to redis")
+			log.Info().Msg("Successfully to save refresh token to redis")
 		}
 	}()
 
-	return TokenStruct{
+	return dto.Token{
 		Type:         "Bearer",
 		Token:        authToken.Token,
 		RefreshToken: authToken.RefreshToken,

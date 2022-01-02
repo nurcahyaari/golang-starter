@@ -1,5 +1,21 @@
+# ignore env
 .env
+.env-*
+.env.yaml
+*.yaml
+
+build/
 temp/
+tmp/
 .idea
+docs
 
 src/user_cart
+
+# ignore wire
+wire_gen.go
+
+
+# RSA key
+.public
+.private
