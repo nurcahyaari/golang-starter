@@ -4,5 +4,5 @@ dev: generate
 generate:
 	go generate .
 
-build:
+build: generate
 	mkdir build && go build -o build/app

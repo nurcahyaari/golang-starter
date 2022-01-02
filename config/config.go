@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"sync"
 
@@ -54,10 +55,11 @@ type Config struct {
 }
 
 func Get() Config {
-	viper.SetConfigFile(".env")
+	viper.SetConfigFile("config.yaml")
+	viper.AutomaticEnv()
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Fatalln("cannot read .env file")
+		log.Fatalln(fmt.Sprintf("cannot read .env file: %v", err))
 	}
 
 	doOnce.Do(func() {

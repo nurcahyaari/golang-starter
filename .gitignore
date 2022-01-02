@@ -1,5 +1,8 @@
 # ignore env
 .env
+.env-*
+.env.yaml
+*.yaml
 
 build/
 temp/
