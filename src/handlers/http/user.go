@@ -2,7 +2,6 @@ package http
 
 import (
 	"encoding/json"
-	"fmt"
 	httpresponse "golang-starter/internal/protocols/http/response"
 	"golang-starter/src/modules/user/dto"
 	"net/http"
@@ -82,7 +81,6 @@ func (h HttpHandlerImpl) UserLogin(w http.ResponseWriter, r *http.Request) {
 // @Router /users/refresh [POST]
 func (h HttpHandlerImpl) UserRefreshToken(w http.ResponseWriter, r *http.Request) {
 	userId := r.Header.Get("id")
-	fmt.Println(userId)
 
 	res, err := h.UserService.UserRefreshToken(r.Context(), userId)
 	if err != nil {

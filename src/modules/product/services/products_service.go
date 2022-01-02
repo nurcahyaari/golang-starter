@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"golang-starter/src/modules/product/dto"
 	"golang-starter/src/modules/product/repositories"
 
@@ -57,11 +56,11 @@ func (s ProductServiceImpl) GetProductByProductID(ctx context.Context, productID
 func (s ProductServiceImpl) CreateNewProduct(ctx context.Context, data dto.ProductRequestBody) (*dto.ProductsResponse, error) {
 	product := data.ToProductEntities()
 
-	a, err := s.ProductRepository.InsertProducts(ctx, product)
+	_, err := s.ProductRepository.InsertProducts(ctx, product)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(a)
+
 	return nil, nil
 }
 
