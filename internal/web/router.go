@@ -2,7 +2,7 @@ package web
 
 import (
 	"golang-starter/infrastructures/db"
-	"golang-starter/infrastructures/local_db"
+	"golang-starter/infrastructures/localdb"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -10,5 +10,5 @@ import (
 type RouterStruct struct {
 	Web       *fiber.App
 	MysqlDB   db.MysqlDB
-	ScribleDB local_db.ScribleDB
+	ScribleDB localdb.ScribleDB
 }

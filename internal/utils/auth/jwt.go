@@ -3,7 +3,7 @@ package auth
 import (
 	"fmt"
 	"golang-starter/config"
-	"golang-starter/infrastructures/local_db"
+	"golang-starter/infrastructures/localdb"
 	"golang-starter/infrastructures/logger"
 
 	"golang-starter/internal/utils/encryption"
@@ -29,10 +29,10 @@ type JwtTokenInterface interface {
 }
 
 type jwtToken struct {
-	cached local_db.ScribleDB
+	cached localdb.ScribleDB
 }
 
-func NewJwt(cached local_db.ScribleDB) JwtTokenInterface {
+func NewJwt(cached localdb.ScribleDB) JwtTokenInterface {
 	return &jwtToken{cached: cached}
 }
 

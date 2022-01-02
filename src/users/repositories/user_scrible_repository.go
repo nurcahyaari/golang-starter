@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"golang-starter/infrastructures/local_db"
+	"golang-starter/infrastructures/localdb"
 	"golang-starter/src/users/entities"
 )
 
@@ -10,10 +10,10 @@ type UserScribleRepositoryInterface interface {
 }
 
 type userScribleRepository struct {
-	scribleDB local_db.ScribleDB
+	scribleDB localdb.ScribleDB
 }
 
-func NewUserScribleRepositoryInterface(scribleDB local_db.ScribleDB) UserScribleRepositoryInterface {
+func NewUserScribleRepositoryInterface(scribleDB localdb.ScribleDB) UserScribleRepositoryInterface {
 	return &userScribleRepository{
 		scribleDB: scribleDB,
 	}

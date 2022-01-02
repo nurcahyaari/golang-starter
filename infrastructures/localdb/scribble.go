@@ -1,4 +1,4 @@
-package local_db
+package localdb
 
 import (
 	"log"

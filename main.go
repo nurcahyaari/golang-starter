@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"golang-starter/config"
 	"golang-starter/infrastructures/db"
-	"golang-starter/infrastructures/local_db"
+	"golang-starter/infrastructures/localdb"
 	"golang-starter/internal/routes"
 	"golang-starter/internal/web"
 	"log"
@@ -21,7 +21,7 @@ func main() {
 	app := fiber.New()
 
 	mysqlDB := db.NewMysqlClient()
-	scribleDB := local_db.NewScribleClient()
+	scribleDB := localdb.NewScribleClient()
 
 	routeStruct := routes.RouterStruct{
 		RouterStruct: web.RouterStruct{
