@@ -3,12 +3,7 @@ package auth
 import (
 	"fmt"
 	"golang-starter/config"
-<<<<<<< HEAD
 	"golang-starter/infrastructures/localdb"
-	"golang-starter/infrastructures/logger"
-=======
-	localdb "golang-starter/infrastructures/local_db"
->>>>>>> 69dd86c29b7f455fad88cb5217980278d0199b8a
 
 	"golang-starter/internal/utils/auth/dto"
 	"golang-starter/internal/utils/encryption"

@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	localdb "golang-starter/infrastructures/local_db"
+	"golang-starter/infrastructures/localdb"
 	"golang-starter/src/modules/user/entities"
 )
 

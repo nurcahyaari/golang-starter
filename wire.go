@@ -5,11 +5,7 @@ package main
 import (
 	"golang-starter/infrastructures/cached"
 	"golang-starter/infrastructures/db"
-<<<<<<< HEAD
 	"golang-starter/infrastructures/localdb"
-=======
-	localdb "golang-starter/infrastructures/local_db"
->>>>>>> 69dd86c29b7f455fad88cb5217980278d0199b8a
 	"golang-starter/internal/protocols/http"
 	httprouter "golang-starter/internal/protocols/http/router"
 	jwtauth "golang-starter/internal/utils/auth"

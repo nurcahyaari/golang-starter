@@ -2,7 +2,7 @@ package repositories
 
 import (
 	"golang-starter/infrastructures/db"
-	localdb "golang-starter/infrastructures/local_db"
+	"golang-starter/infrastructures/localdb"
 )
 
 type Repositories interface {
