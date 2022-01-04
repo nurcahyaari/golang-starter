@@ -3,6 +3,8 @@ package db
 import (
 	"fmt"
 	"golang-starter/config"
+	"strings"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -36,4 +38,35 @@ func NewMysqlClient() *MysqlImpl {
 	return &MysqlImpl{
 		DB: db,
 	}
+}
+
+func (db MysqlImpl) TransactionCallback(transaction func() (interface{}, error)) (interface{}, error) {
+	retry := 0
+	maxRetry := 1000
+
+	res, err := transaction()
+
+	if err != nil {
+		for strings.Contains(err.Error(), "Error 1213") {
+			log.Err(err).Msg("Restaring transaction")
+			time.Sleep(10 * time.Millisecond)
+			res, err = transaction()
+			if err != nil {
+				fmt.Println(err)
+				if !strings.Contains(err.Error(), "Error 1213") {
+					if retry >= maxRetry {
+						log.Info().Msgf("Retrying transaction %d success", retry)
+						break
+					}
+				} else {
+					break
+				}
+			} else {
+				log.Info().Msgf("Retrying transaction %d success", retry)
+				break
+			}
+		}
+	}
+
+	return res, err
 }
