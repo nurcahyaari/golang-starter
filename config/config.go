@@ -55,7 +55,7 @@ type Config struct {
 }
 
 func Get() Config {
-	viper.SetConfigFile("config.yaml")
+	viper.AddConfigPath(".")
 	viper.AutomaticEnv()
 	err := viper.ReadInConfig()
 	if err != nil {
