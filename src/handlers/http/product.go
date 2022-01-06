@@ -77,7 +77,6 @@ func (h HttpHandlerImpl) DeleteProductByID(w http.ResponseWriter, r *http.Reques
 }
 
 func (h HttpHandlerImpl) CreateNewProduct(w http.ResponseWriter, r *http.Request) {
-	// productRequestBody := new(dto.ProductsRequestBody)
 	product := dto.ProductRequestBody{}
 	err := json.NewDecoder(r.Body).Decode(&product)
 	if err != nil {
