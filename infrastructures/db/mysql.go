@@ -70,3 +70,15 @@ func (db MysqlImpl) TransactionCallback(transaction func() (interface{}, error))
 
 	return res, err
 }
+
+type MysqlTxImpl struct {
+	Tx *sqlx.Tx
+}
+
+func NewMysqlTx() *MysqlTxImpl {
+	conn := NewMysqlClient()
+
+	return &MysqlTxImpl{
+		Tx: conn.DB.MustBegin(),
+	}
+}

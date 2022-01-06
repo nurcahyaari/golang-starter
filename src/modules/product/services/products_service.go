@@ -9,6 +9,7 @@ import (
 )
 
 //go:generate go run github.com/sog01/repogen/cmd/repogen -module golang-starter -destination ../ -envFile .env -envPrefix DB -tables products -modelPackage entities -repositoryPackage repositories
+//go:generate go run github.com/sog01/repogen/cmd/repogen -module golang-starter -destination ../ -envFile .env -envPrefix DB -tables products_images -modelPackage entities -repositoryPackage repositories
 
 type ProductService interface {
 	GetProducts(ctx context.Context) (dto.ProductsListResponse, error)
@@ -56,8 +57,31 @@ func (s ProductServiceImpl) GetProductByProductID(ctx context.Context, productID
 func (s ProductServiceImpl) CreateNewProduct(ctx context.Context, data dto.ProductRequestBody) (*dto.ProductsResponse, error) {
 	product := data.ToProductEntities()
 
-	_, err := s.ProductRepository.InsertProducts(ctx, product)
+	// start repository
+	var err error
+	tx := s.ProductRepository.StartTx()
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	res, err := s.ProductRepository.InsertProducts(ctx, product)
 	if err != nil {
+		return nil, err
+	}
+
+	lastInsertedId, err := res.LastInsertId()
+
+	productImages := data.ToProductImagesEntities(lastInsertedId)
+
+	_, err = s.ProductRepository.InsertProductsImagesList(ctx, productImages)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = tx.Commit(); err != nil {
 		return nil, err
 	}
 
