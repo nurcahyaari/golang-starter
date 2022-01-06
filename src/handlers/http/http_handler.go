@@ -26,6 +26,7 @@ func NewHttpHandler(
 func (h *HttpHandlerImpl) Router(r *chi.Mux) {
 	r.Get("/products", h.GetProducts)
 	r.Get("/products/{productId}", h.GetProductByID)
+	r.Post("/products", h.CreateNewProduct)
 	r.Get("/users/{userId}", h.GetUserById)
 	r.Post("/users/login", h.UserLogin)
 	r.With(middleware.JwtVerifyRefreshToken).Post("/users/refresh", h.UserRefreshToken)

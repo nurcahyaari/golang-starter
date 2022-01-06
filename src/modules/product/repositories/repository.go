@@ -42,6 +42,7 @@ func NewRepository(
 
 // StartTx: Inject transaction
 // once you defined your repository, you should define your StartTx to using transaction
+// so every you create your repository, you should define your StartTx function to handle transactional database
 func (repo *RepositoriesImpl) StartTx() *sqlx.Tx {
 	tx := db.NewMysqlTx().Tx
 

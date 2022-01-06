@@ -63,6 +63,7 @@ func (s ProductServiceImpl) CreateNewProduct(ctx context.Context, data dto.Produ
 
 	defer func() {
 		if err != nil {
+			log.Err(err).Msg("an error occured")
 			tx.Rollback()
 		}
 	}()

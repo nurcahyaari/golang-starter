@@ -40,6 +40,9 @@ func NewMysqlClient() *MysqlImpl {
 	}
 }
 
+// TransactionCallback is transaction group and using callback function to run the transaction
+// you can use this function same as when you use the transaction without callback. so, if you want to use
+// TransactionCallback just wrap your function with this method
 func (db MysqlImpl) TransactionCallback(transaction func() (interface{}, error)) (interface{}, error) {
 	retry := 0
 	maxRetry := 1000
