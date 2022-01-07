@@ -62,6 +62,7 @@ func (s ProductServiceImpl) CreateNewProduct(ctx context.Context, data dto.Produ
 	tx := s.ProductRepository.StartTx()
 
 	defer func() {
+		s.ProductRepository.CloseTx()
 		if err != nil {
 			log.Err(err).Msg("an error occured")
 			tx.Rollback()
