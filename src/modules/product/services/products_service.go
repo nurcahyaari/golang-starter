@@ -2,14 +2,12 @@ package services
 
 import (
 	"context"
+	"golang-starter/infrastructures/db/transaction"
 	"golang-starter/src/modules/product/dto"
 	"golang-starter/src/modules/product/repositories"
 
 	"github.com/rs/zerolog/log"
 )
-
-//go:generate go run github.com/sog01/repogen/cmd/repogen -module golang-starter -destination ../ -envFile .env -envPrefix DB -tables products -modelPackage entities -repositoryPackage repositories
-//go:generate go run github.com/sog01/repogen/cmd/repogen -module golang-starter -destination ../ -envFile .env -envPrefix DB -tables products_images -modelPackage entities -repositoryPackage repositories
 
 type ProductService interface {
 	GetProducts(ctx context.Context) (dto.ProductsListResponse, error)
@@ -20,13 +18,16 @@ type ProductService interface {
 
 type ProductServiceImpl struct {
 	ProductRepository repositories.Repositories
+	transaction       *transaction.TransactionImpl
 }
 
 func NewProductService(
 	productRepository repositories.Repositories,
+	transaction *transaction.TransactionImpl,
 ) *ProductServiceImpl {
 	return &ProductServiceImpl{
 		ProductRepository: productRepository,
+		transaction:       transaction,
 	}
 }
 
@@ -57,35 +58,26 @@ func (s ProductServiceImpl) GetProductByProductID(ctx context.Context, productID
 func (s ProductServiceImpl) CreateNewProduct(ctx context.Context, data dto.ProductRequestBody) (*dto.ProductsResponse, error) {
 	product := data.ToProductEntities()
 
-	// start repository
-	var err error
-	tx := s.ProductRepository.StartTx()
-
-	defer func() {
-		s.ProductRepository.CloseTx()
+	// start transaction
+	s.transaction.RunWithTransaction(ctx, func() error {
+		res, err := s.ProductRepository.InsertProducts(ctx, product)
 		if err != nil {
-			log.Err(err).Msg("an error occured")
-			tx.Rollback()
+			return err
 		}
-	}()
 
-	res, err := s.ProductRepository.InsertProducts(ctx, product)
-	if err != nil {
-		return nil, err
-	}
+		lastInsertedId, err := res.LastInsertId()
+		if err != nil {
+			return err
+		}
 
-	lastInsertedId, err := res.LastInsertId()
+		productImages := data.ToProductImagesEntities(lastInsertedId)
 
-	productImages := data.ToProductImagesEntities(lastInsertedId)
-
-	_, err = s.ProductRepository.InsertProductsImagesList(ctx, productImages)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = tx.Commit(); err != nil {
-		return nil, err
-	}
+		_, err = s.ProductRepository.InsertProductsImagesList(ctx, productImages)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
 
 	return nil, nil
 }

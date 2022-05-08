@@ -13,8 +13,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-//go:generate go run github.com/sog01/repogen/cmd/repogen -module golang-starter -destination ../ -envFile .env -envPrefix DB -tables users -modelPackage entities -repositoryPackage repositories
-
 type UserService interface {
 	FindByID(ctx context.Context, id uint) (*dto.UserRespBody, error)
 	UserLogin(ctx context.Context, req dto.UserRequestLoginBody) (*dto.UserTokenRespBody, error)

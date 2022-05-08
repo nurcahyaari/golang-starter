@@ -16,14 +16,15 @@ require (
 	github.com/google/wire v0.5.0
 	github.com/guregu/null v4.0.0+incompatible
 	github.com/jcelliott/lumber v0.0.0-20160324203708-dd349441af25 // indirect
-	github.com/jmoiron/sqlx v1.3.4
+	github.com/jmoiron/sqlx v1.3.5
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/nanobox-io/golang-scribble v0.0.0-20190309225732-aa3e7c118975
+	github.com/nurcahyaari/sqlabst v0.0.0-20220508101604-d82c7de6cb72 // indirect
 	github.com/rs/zerolog v1.26.1
 	github.com/sog01/repogen v0.0.0-20211223095340-b32c8fd68bdb // indirect
 	github.com/spf13/viper v1.10.1
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2 // indirect
 	github.com/swaggo/http-swagger v1.1.2 // indirect
 	github.com/swaggo/swag v1.7.8 // indirect
