@@ -59,7 +59,7 @@ func (s ProductServiceImpl) CreateNewProduct(ctx context.Context, data dto.Produ
 	product := data.ToProductEntities()
 
 	// start transaction
-	s.transaction.RunWithTransaction(ctx, func() error {
+	err := s.transaction.RunWithTransaction(ctx, func() error {
 		res, err := s.ProductRepository.InsertProducts(ctx, product)
 		if err != nil {
 			return err
@@ -79,7 +79,7 @@ func (s ProductServiceImpl) CreateNewProduct(ctx context.Context, data dto.Produ
 		return nil
 	})
 
-	return nil, nil
+	return nil, err
 }
 
 func (s ProductServiceImpl) DeleteProduct(ctx context.Context, productID int) error {

@@ -34,71 +34,9 @@ func (s *TransactionImpl) RunWithTransaction(ctx context.Context, f func() error
 
 	err := f()
 	if err != nil {
-		s.Commit()
+		s.Rollback()
 		return err
 	}
 
-	return s.Rollback()
+	return s.Commit()
 }
-
-// import (
-// 	"fmt"
-// 	"strings"
-// 	"time"
-
-// 	"github.com/jmoiron/sqlx"
-// 	"github.com/rs/zerolog/log"
-// )
-
-// type Transaction interface {
-// 	TransactionStart() error
-// 	TransactionCommit() error
-// 	TransactionRollback() error
-// 	TransactionCallback(transaction func() (interface{}, error)) (interface{}, error)
-// }
-
-// type TransactionImpl struct {
-// 	Db *sqlx.DB
-// 	Tx *sqlx.Tx
-// }
-
-// func NewTransaction(db *sqlx.DB) *TransactionImpl {
-// 	tx := db.MustBegin()
-// 	return &TransactionImpl{
-// 		Tx: tx,
-// 	}
-// }
-
-// // TransactionCallback is transaction group and using callback function to run the transaction
-// // you can use this function same as when you use the transaction without callback. so, if you want to use
-// // TransactionCallback just wrap your function with this method
-// func (txi TransactionImpl) TransactionCallback(transaction func() (interface{}, error)) (interface{}, error) {
-// 	retry := 0
-// 	maxRetry := 1000
-
-// 	res, err := transaction()
-
-// 	if err != nil {
-// 		for strings.Contains(err.Error(), "Error 1213") {
-// 			log.Err(err).Msg("Restaring transaction")
-// 			time.Sleep(10 * time.Millisecond)
-// 			res, err = transaction()
-// 			if err != nil {
-// 				fmt.Println(err)
-// 				if !strings.Contains(err.Error(), "Error 1213") {
-// 					if retry >= maxRetry {
-// 						log.Info().Msgf("Retrying transaction %d success", retry)
-// 						break
-// 					}
-// 				} else {
-// 					break
-// 				}
-// 			} else {
-// 				log.Info().Msgf("Retrying transaction %d success", retry)
-// 				break
-// 			}
-// 		}
-// 	}
-
-// 	return res, err
-// }
