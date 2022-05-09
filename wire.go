@@ -1,10 +1,11 @@
-//+build wireinject
+//go:build wireinject
+// +build wireinject
 
 package main
 
 import (
-	"golang-starter/infrastructures/cached"
 	"golang-starter/infrastructures/db"
+	"golang-starter/infrastructures/db/transaction"
 	"golang-starter/infrastructures/localdb"
 	"golang-starter/internal/protocols/http"
 	httprouter "golang-starter/internal/protocols/http/router"
@@ -18,12 +19,10 @@ import (
 	"github.com/google/wire"
 )
 
-// Wiring for data storage
-var storages = wire.NewSet(
-	db.NewMysqlClient,
-	localdb.NewScribleClient,
-	cached.NewRedisClient,
-)
+// wiring transaction
+// var transactionDB = wire.NewSet(
+// 	transaction.NewTransaction,
+// )
 
 // wiring jwt auth
 var jwtAuth = wire.NewSet(
@@ -77,11 +76,6 @@ var userSvc = wire.NewSet(
 	),
 )
 
-var domain = wire.NewSet(
-	productSvc,
-	userSvc,
-)
-
 // Wiring for http protocol
 var httpHandler = wire.NewSet(
 	httphandler.NewHttpHandler,
@@ -94,12 +88,15 @@ var httpRouter = wire.NewSet(
 
 func InitHttpProtocol() *http.HttpImpl {
 	wire.Build(
-		storages,
+		db.NewMysqlClient,
+		localdb.NewScribleClient,
+		transaction.NewTransaction,
 		productRepo,
 		userMysqlRepo,
 		userScribleRepo,
 		jwtAuth,
-		domain,
+		productSvc,
+		userSvc,
 		httpHandler,
 		httpRouter,
 		http.NewHttpProtocol,
