@@ -30,7 +30,6 @@ func GracefulShutdown(ctx context.Context, timeout time.Duration, operations map
 					log.Err(err).Msg("Error when stop server")
 					// return
 				}
-				log.Warn().Msgf("%s server stopped", k)
 			}(k, op)
 		}
 
