@@ -1,6 +1,7 @@
 package main
 
 import (
+	"golang-starter/internal/graceful"
 	"golang-starter/internal/logger"
 )
 
@@ -13,5 +14,7 @@ func main() {
 	// init log
 	logger.InitLogger()
 
-	InitHttpProtocol().Listen()
+	ctx := graceful.GracefulShutdown()
+
+	InitHttpProtocol().Listen(ctx)
 }
