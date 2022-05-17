@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"golang-starter/internal/graceful"
 	"golang-starter/internal/logger"
+	"time"
 )
 
 //go:generate go run github.com/google/wire/cmd/wire
@@ -14,7 +16,17 @@ func main() {
 	// init log
 	logger.InitLogger()
 
-	ctx := graceful.GracefulShutdown()
+	initProtocol := InitHttpProtocol()
 
-	InitHttpProtocol().Listen(ctx)
+	graceful.GracefulShutdown(
+		context.TODO(),
+		5*time.Second,
+		map[string]graceful.Operation{
+			"http": func(ctx context.Context) error {
+				return initProtocol.Shutdown(ctx)
+			},
+		},
+	)
+
+	initProtocol.Listen()
 }

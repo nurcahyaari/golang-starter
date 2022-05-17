@@ -6,7 +6,6 @@ import (
 	"golang-starter/config"
 	"golang-starter/internal/protocols/http/router"
 	"net/http"
-	"time"
 
 	"github.com/rs/zerolog/log"
 
@@ -15,6 +14,7 @@ import (
 
 type HttpImpl struct {
 	HttpRouter *router.HttpRouterImpl
+	httpServer *http.Server
 }
 
 func NewHttpProtocol(
@@ -29,38 +29,24 @@ func (p *HttpImpl) setupRouter(app *chi.Mux) {
 	p.HttpRouter.Router(app)
 }
 
-func (p *HttpImpl) Listen(ctx context.Context) {
-
+func (p *HttpImpl) Listen() {
 	app := chi.NewRouter()
 
 	p.setupRouter(app)
 
 	serverPort := fmt.Sprintf(":%d", config.Get().Application.Port)
-	httpserver := &http.Server{
+	p.httpServer = &http.Server{
 		Addr:    serverPort,
 		Handler: app,
 	}
 
-	go func() {
-		log.Info().Msgf("Server started on Port %s ", serverPort)
-		httpserver.ListenAndServe()
-	}()
+	log.Info().Msgf("Server started on Port %s ", serverPort)
+	p.httpServer.ListenAndServe()
+}
 
-	<-ctx.Done()
-
-	log.Info().Msg("server stopped")
-
-	ctxShutdown, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	defer func() {
-		cancel()
-	}()
-
-	if err := httpserver.Shutdown(ctxShutdown); err != nil {
-		log.Err(err).Msgf("server Shutdown Failed:%+s", err)
-		if err == http.ErrServerClosed {
-			err = nil
-		}
+func (p *HttpImpl) Shutdown(ctx context.Context) error {
+	if err := p.httpServer.Shutdown(ctx); err != nil {
+		return err
 	}
-
-	log.Info().Msg("server exited properly")
+	return nil
 }
