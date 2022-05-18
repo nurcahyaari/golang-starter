@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"sync"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -24,6 +25,9 @@ type Config struct {
 				Private string `mapstructure:"PRIVATE"`
 			}
 		}
+		Graceful struct {
+			MaxSecond time.Duration `mapstructure:"MAX_SECOND"`
+		} `mapstructure:"GRACEFUL"`
 	} `mapstructure:"APPLICATION"`
 
 	Auth struct {

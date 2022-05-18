@@ -1,4 +1,6 @@
-dev: generate
+dev: generate run
+
+run:
 	go run github.com/cosmtrek/air
 
 generate:

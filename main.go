@@ -1,6 +1,9 @@
 package main
 
 import (
+	"context"
+	"golang-starter/config"
+	"golang-starter/internal/graceful"
 	"golang-starter/internal/logger"
 )
 
@@ -13,5 +16,17 @@ func main() {
 	// init log
 	logger.InitLogger()
 
-	InitHttpProtocol().Listen()
+	initProtocol := InitHttpProtocol()
+
+	graceful.GracefulShutdown(
+		context.TODO(),
+		config.Get().Application.Graceful.MaxSecond,
+		map[string]graceful.Operation{
+			"http": func(ctx context.Context) error {
+				return initProtocol.Shutdown(ctx)
+			},
+		},
+	)
+
+	initProtocol.Listen()
 }
