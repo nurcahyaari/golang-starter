@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
+	"golang-starter/config"
 	"golang-starter/internal/graceful"
 	"golang-starter/internal/logger"
-	"time"
 )
 
 //go:generate go run github.com/google/wire/cmd/wire
@@ -20,7 +20,7 @@ func main() {
 
 	graceful.GracefulShutdown(
 		context.TODO(),
-		5*time.Second,
+		config.Get().Application.Graceful.MaxSecond,
 		map[string]graceful.Operation{
 			"http": func(ctx context.Context) error {
 				return initProtocol.Shutdown(ctx)
