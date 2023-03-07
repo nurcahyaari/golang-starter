@@ -3,7 +3,6 @@ module golang-starter
 go 1.14
 
 require (
-	github.com/cosmtrek/air v1.29.0 // indirect
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-chi/cors v1.2.0
 	github.com/go-openapi/spec v0.20.6 // indirect
@@ -24,7 +23,5 @@ require (
 	github.com/spf13/viper v1.10.1
 	github.com/stretchr/testify v1.7.1
 	github.com/swaggo/http-swagger v1.2.8
-	github.com/swaggo/swag v1.8.1
-	golang.org/x/crypto v0.0.0-20211215165025-cf75a172585e
-	golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6 // indirect
+	golang.org/x/crypto v0.1.0
 )
